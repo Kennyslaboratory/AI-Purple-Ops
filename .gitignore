@@ -8,16 +8,18 @@ __pycache__/
 pip-log.txt
 pip-delete-this-directory.txt
 
-# IDE
+# IDE and Editor artifacts
 .vscode/
 .idea/
+.cursor/
+.cursorignore
 *.swp
 *.swo
 *~
 .DS_Store
 
-# Cursor IDE artifacts (keep .cursor/rules tracked)
-.cursor/plans/
+# GitHub templates (use organization-level templates instead)
+.github/
 
 # Environment
 .env
