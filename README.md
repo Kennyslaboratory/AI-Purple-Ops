@@ -95,15 +95,15 @@ cd ai-purple-ops
 └────┬──────────────────────┬──────────────────────┬─────────┘
      │                      │                      │
      ▼                      ▼                      ▼
-┌──────────┐         ┌──────────┐         ┌──────────────┐
-│  Safety  │         │ Security │         │  Compliance  │
-│   Lane   │         │   Lane   │         │     Lane     │
-├──────────┤         ├──────────┤         ├──────────────┤
-│ Content  │         │ Prompt   │         │ NIST AI RMF  │
-│ Policy   │         │ Injection│         │ EU AI Act    │
-│ Harmful  │         │ Tool     │         │ FedRAMP      │
-│ Outputs  │         │ Exploits │         │ ISO 42001    │
-└────┬─────┘         └────┬─────┘         └──────┬───────┘
+┌──────────┐         ┌──────────┐          ┌──────────────┐
+│  Safety  │         │ Security │          │  Compliance  │
+│   Lane   │         │   Lane   │          │     Lane     │
+├──────────┤         ├──────────┤          ├──────────────┤
+│ Content  │         │ Prompt   │          │ NIST AI RMF  │
+│ Policy   │         │ Injection│          │ EU AI Act    │
+│ Harmful  │         │ Tool     │          │ FedRAMP      │
+│ Outputs  │         │ Exploits │          │ ISO 42001    │
+└────┬─────┘         └────┬─────┘          └──────┬───────┘
      │                    │                       │
      └────────────────────┴───────────────────────┘
                           │
@@ -237,11 +237,7 @@ The MIT License permits broad use but provides no warranty. Organizations are re
 
 ## 🔒 Security
 
-**Reporting Vulnerabilities**: See [SECURITY.md](SECURITY.md) for our disclosure policy.
-
-**SLA**: 24-hour triage, 72-hour initial communication, severity-based remediation timelines.
-
-**Contact**: See [SECURITY_CONTACTS.md](SECURITY_CONTACTS.md) for escalation paths.
+Report vulnerabilities via GitHub Security Advisories. See [SECURITY.md](SECURITY.md) for our disclosure policy and response timeline.
 
 ---
 

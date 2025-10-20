@@ -1,16 +1,21 @@
 # Security Policy
 
-Report issues privately to the security team. See SECURITY_CONTACTS.md.
+## Reporting Vulnerabilities
 
-No secrets in code, tests, or docs. Use .env.example and CI secrets.
+Report security issues privately via GitHub Security Advisories or email security@[yourdomain].
 
-Treat model output as untrusted input. Validate with schemas and policy oracles before any action.
+## Security Practices
 
-## Disclosure SLA
-- Triage within 24 hours
-- Initial communication within 72 hours
-- Fix or mitigation timeline based on severity class
+- No secrets in code, tests, or documentation
+- All model outputs treated as untrusted input
+- Schema validation at all boundaries
 - Coordinated disclosure honored by agreement
 
-Link: docs/USAGE_POLICY.md
+## Response Timeline
+
+- **24 hours**: Initial triage and acknowledgment
+- **72 hours**: Detailed impact assessment
+- **Variable**: Fix timeline based on severity
+
+For usage guidelines regarding offensive tooling, see [USAGE_POLICY.md](docs/USAGE_POLICY.md).
 
