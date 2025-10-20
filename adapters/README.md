@@ -1,0 +1,2 @@
+Adapters live here later.
+

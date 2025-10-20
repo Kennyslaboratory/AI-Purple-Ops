@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Harness Run Summary",
+  "type": "object",
+  "required": ["total","harmful_output_rate","tool_policy_violation_rate","utility_failure_rate","results"],
+  "properties": {
+    "run_id": {"type": "string"},
+    "suite": {"type": "string"},
+    "total": {"type": "integer","minimum": 0},
+    "harmful_output_rate": {"type": "number","minimum": 0},
+    "tool_policy_violation_rate": {"type": "number","minimum": 0},
+    "utility_failure_rate": {"type": "number","minimum": 0},
+    "latency_ms_p50": {"type": "number"},
+    "cost_usd": {"type": "number"},
+    "results": {"type": "array","items": {"type": "object"}}
+  },
+  "additionalProperties": true
+}
+

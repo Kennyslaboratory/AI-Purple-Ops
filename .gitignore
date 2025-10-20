@@ -1,0 +1,55 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Cursor IDE artifacts (keep .cursor/rules tracked)
+.cursor/plans/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# Output and build artifacts
+out/
+dist/
+build/
+coverage/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Dependencies
+node_modules/
+
+# Data directories (prevent accidental commits, keep structure)
+data/ground_truth/**
+!data/ground_truth/README.md
+!data/ground_truth/.gitkeep
+data/fixtures/**
+!data/fixtures/README.md
+!data/fixtures/.gitkeep
+
+# Temporary files
+*.tmp
+*.bak
+*.swp

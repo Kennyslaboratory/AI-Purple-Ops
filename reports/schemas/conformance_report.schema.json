@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Conformance Report",
+  "type": "object",
+  "required": ["profile","version","results"],
+  "properties": {
+    "profile": {"type": "string","enum": ["nist_ai_rmf","eu_ai_act","fedramp"]},
+    "version": {"type": "string"},
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["control","status"],
+        "properties": {
+          "control": {"type": "string"},
+          "status": {"type": "string","enum": ["pass","fail","n/a","not_tested"]},
+          "evidence": {"type": "array","items": {"type": "string"}},
+          "notes": {"type": "string"}
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}
+

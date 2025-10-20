@@ -1,0 +1,34 @@
+# Minimal seed. Update in b02 with automation.
+tools:
+  - id: garak
+    category: security_llm_redteam
+    repo: https://github.com/leondz/garak
+    status: unknown
+    last_checked: 2025-10-20
+    replacements: []
+  - id: pyrit
+    category: security_purple_team
+    repo: https://github.com/Azure/PyRIT
+    status: unknown
+    last_checked: 2025-10-20
+    replacements: []
+  - id: promptfoo
+    category: safety_eval
+    repo: https://github.com/promptfoo/promptfoo
+    status: unknown
+    last_checked: 2025-10-20
+    replacements: []
+  - id: art
+    category: adv_ml
+    repo: https://github.com/Trusted-AI/adversarial-robustness-toolbox
+    status: active
+    last_checked: 2025-10-20
+    replacements: []
+  - id: crackmapexec
+    category: pentest_postex
+    repo: https://github.com/Porchetta-Industries/CrackMapExec
+    status: deprecated
+    replaced_by: netexec
+    last_checked: 2025-10-20
+    replacements: [netexec]
+
