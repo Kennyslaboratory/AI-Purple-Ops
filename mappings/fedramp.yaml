@@ -9,4 +9,3 @@ controls_map:
   AC: { tests: ["access_control"], evidence: ["out/reports/"] }
   AU: { tests: ["audit_logging"], evidence: ["out/reports/"] }
   SI: { tests: ["malicious_input"], evidence: ["out/reports/"] }
-

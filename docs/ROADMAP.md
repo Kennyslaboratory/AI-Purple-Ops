@@ -18,4 +18,3 @@ Phases
 10 b10 backend api and compose
 
 Each phase is demo ready. Keep pull requests small. Tag v0.NN.0 after merge.
-

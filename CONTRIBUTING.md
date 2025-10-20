@@ -9,5 +9,3 @@ Checklist
 - No secrets
 - Docs updated when behavior changes
 - Follow the dev loop in .cursor/rules
-
-

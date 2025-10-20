@@ -20,4 +20,3 @@ benchmarks:
     suites: [rag]
     adapters: [ragchecker]
     metrics: [faithfulness_score, answer_relevancy]
-

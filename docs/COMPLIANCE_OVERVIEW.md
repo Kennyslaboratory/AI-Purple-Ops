@@ -14,4 +14,3 @@ Run artifacts
 - Evidence manifest reports/schemas/evidence_manifest.schema.json
 - Conformance report reports/schemas/conformance_report.schema.json
 - Templates under reports/templates/*
-

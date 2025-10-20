@@ -2,8 +2,8 @@
 
 This is the authoritative source of truth for branch planning and acceptance criteria.
 
-## b01-initial-commit  
-**Goal:** Scaffold, rules, roadmap, governance  
+## b01-initial-commit
+**Goal:** Scaffold, rules, roadmap, governance
 **Done when:**
 - All root governance files present
 - .cursor/rules contains 6-step dev loop
@@ -18,8 +18,8 @@ This is the authoritative source of truth for branch planning and acceptance cri
 - API includes /benchmarks, /runs, /runs/{id}, /evidence/{id}.zip
 - Deprecation registry exists under registry/*
 
-## b02-dev-tooling  
-**Goal:** pyproject, pre-commit, ruff, black, mypy, Makefile  
+## b02-dev-tooling
+**Goal:** pyproject, pre-commit, ruff, black, mypy, Makefile
 **Done when:**
 - make setup works on clean machine
 - make lint runs and passes
@@ -28,8 +28,8 @@ This is the authoritative source of truth for branch planning and acceptance cri
 - pyproject.toml has all base dependencies
 - Basic smoke test passes
 
-## b03-cli-skeleton  
-**Goal:** Typer CLI shell, one smoke test  
+## b03-cli-skeleton
+**Goal:** Typer CLI shell, one smoke test
 **Done when:**
 - python -m cli.harness --help works
 - Commands: run, gate, version
@@ -37,8 +37,8 @@ This is the authoritative source of truth for branch planning and acceptance cri
 - Help text references docs
 - One integration test proves wiring
 
-## b04-runner-mock  
-**Goal:** Minimal runner, mock model, JSON and JUnit reporters, normal suite stub  
+## b04-runner-mock
+**Goal:** Minimal runner, mock model, JSON and JUnit reporters, normal suite stub
 **Done when:**
 - Runner executes test cases with mock model
 - JSON report written to out/
@@ -47,8 +47,8 @@ This is the authoritative source of truth for branch planning and acceptance cri
 - Deterministic with seed control
 - Evidence includes timestamps and metadata
 
-## b05-oracles-policies  
-**Goal:** Content rules, tool schema, SLO thresholds  
+## b05-oracles-policies
+**Goal:** Content rules, tool schema, SLO thresholds
 **Done when:**
 - Content policy checks harmful output
 - Tool schema validates against allowlist
@@ -56,8 +56,8 @@ This is the authoritative source of truth for branch planning and acceptance cri
 - SLO thresholds documented
 - Oracles have unit tests
 
-## b06-gate-and-reports  
-**Goal:** Stop ship gate and evidence JSON and JUnit  
+## b06-gate-and-reports
+**Goal:** Stop ship gate and evidence JSON and JUnit
 **Done when:**
 - make gate command works
 - Gate fails on threshold breach
@@ -65,8 +65,8 @@ This is the authoritative source of truth for branch planning and acceptance cri
 - Evidence pack links to all artifacts
 - Reports include pass/fail summary
 
-## b07-redteam-rag-ui-fuzz  
-**Goal:** Adversarial corpora, RAG leakage, UI XSS, Hypothesis fuzz  
+## b07-redteam-rag-ui-fuzz
+**Goal:** Adversarial corpora, RAG leakage, UI XSS, Hypothesis fuzz
 **Done when:**
 - Red-team suite has 20+ adversarial prompts
 - RAG suite tests for leakage and poisoning
@@ -74,8 +74,8 @@ This is the authoritative source of truth for branch planning and acceptance cri
 - Fuzz tests run with Hypothesis
 - All suites integrated into battery
 
-## b08-retrievers-simtools  
-**Goal:** ACL and redaction, simulated tools, action schema  
+## b08-retrievers-simtools
+**Goal:** ACL and redaction, simulated tools, action schema
 **Done when:**
 - Retriever adapter with ACL checks
 - Redaction for PII and secrets
@@ -83,8 +83,8 @@ This is the authoritative source of truth for branch planning and acceptance cri
 - Tool allowlist enforcement
 - Action validation before execution
 
-## b09-ci-workflows  
-**Goal:** PR, nightly, release gate workflows  
+## b09-ci-workflows
+**Goal:** PR, nightly, release gate workflows
 **Done when:**
 - PR workflow: lint, test, baseline, gate
 - Nightly workflow: full battery, report upload
@@ -92,8 +92,8 @@ This is the authoritative source of truth for branch planning and acceptance cri
 - Status badges in README
 - Branch protection enforced
 
-## b10-backend-api-and-compose  
-**Goal:** API surface for UI, OpenAPI stub, Docker compose test env, runbooks, diagrams, evidence pack  
+## b10-backend-api-and-compose
+**Goal:** API surface for UI, OpenAPI stub, Docker compose test env, runbooks, diagrams, evidence pack
 **Done when:**
 - API implements /health, /run, /gate, /reports
 - OpenAPI spec complete and validated
@@ -102,4 +102,3 @@ This is the authoritative source of truth for branch planning and acceptance cri
 - Architecture diagrams current
 - Evidence pack generation automated
 - Backend ready for UI integration
-

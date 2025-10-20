@@ -117,4 +117,3 @@ flowchart TB
     classDef art   fill:#FDB022,stroke:#FDB022,color:#1a1a1a
     classDef hot   fill:#9B1C1C,stroke:#9B1C1C,color:#ffffff
 ```
-

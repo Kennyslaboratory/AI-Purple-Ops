@@ -67,4 +67,3 @@ Use MIT License.
 If commercial exploitation without contribution becomes problematic, revisit with dual-licensing (MIT for open source, commercial license for proprietary use) or switch to Apache 2.0 for patent protection.
 
 This decision prioritizes maximum accessibility and adoption over revenue capture.
-

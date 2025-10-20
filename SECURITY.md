@@ -18,4 +18,3 @@ Report security issues privately via GitHub Security Advisories or email securit
 - **Variable**: Fix timeline based on severity
 
 For usage guidelines regarding offensive tooling, see [USAGE_POLICY.md](docs/USAGE_POLICY.md).
-

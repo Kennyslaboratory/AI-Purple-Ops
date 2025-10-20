@@ -243,8 +243,8 @@ Report vulnerabilities via GitHub Security Advisories. See [SECURITY.md](SECURIT
 
 ## 📊 Project Status
 
-**Current Phase**: b01-initial-commit (Governance & Compliance Infrastructure)  
-**Next Phase**: b02-dev-tooling (pyproject.toml, Makefile, CLI skeleton)  
+**Current Phase**: b01-initial-commit (Governance & Compliance Infrastructure)
+**Next Phase**: b02-dev-tooling (pyproject.toml, Makefile, CLI skeleton)
 **Target**: b10-backend-api-and-compose (Production-ready backend service)
 
 | Phase | Status | Description |

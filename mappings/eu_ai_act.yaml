@@ -14,4 +14,3 @@ articles:
   15_accuracy_robustness_cybersecurity:
     suites: ["normal","redteam","ui"]
     metrics: ["accuracy_proxy","harmful_output_rate","egress_block_rate"]
-

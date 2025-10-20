@@ -1,2 +1,1 @@
 Adapters live here later.
-
