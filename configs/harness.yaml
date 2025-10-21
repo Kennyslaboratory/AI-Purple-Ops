@@ -1,0 +1,12 @@
+run:
+  output_dir: "out"
+  reports_dir: "out/reports"
+  transcripts_dir: "out/transcripts"
+  log_level: "INFO"
+  seed: 42
+
+adapters:
+  garak:
+    model: "openai:gpt-4o-mini"
+  art:
+    enabled: true

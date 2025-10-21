@@ -58,4 +58,3 @@ Violations of this policy may result in:
 - Disciplinary action per organizational policy
 
 For questions or to report misuse, see [SECURITY_CONTACTS.md](../SECURITY_CONTACTS.md).
-

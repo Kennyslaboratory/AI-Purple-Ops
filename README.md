@@ -1,86 +1,126 @@
 # AI Purple Ops
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.1.0-green.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.2.0-green.svg)](CHANGELOG.md)
 [![Status](https://img.shields.io/badge/status-alpha-orange.svg)](docs/ROADMAP.md)
+[![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](pyproject.toml)
 
 **A vendor-neutral testing harness for AI Safety, Security, and Compliance evaluation.**
 
 AI Purple Ops provides a unified backend infrastructure for evaluating AI systems across three critical dimensions: safety (content & policy), security (tools & data), and compliance (regulatory frameworks). Built to power testing workflows from development through production release gates.
 
----
-
-## 🎯 Overview
+## Overview
 
 AI Purple Ops addresses the gap between AI capability development and deployment readiness. As AI systems gain agency—making decisions, invoking tools, and accessing sensitive data—traditional security testing approaches fall short. This framework provides:
 
 - **Compliance-First Architecture**: Machine-readable mappings to NIST AI RMF, EU AI Act, and FedRAMP controls
 - **Evidence Automation**: Structured JSON schemas for audit trails, conformance reports, and evidence packs
 - **Vendor Neutrality**: Adapter-based design for models, platforms, and tooling integration
-- **UI-Ready API**: RESTful endpoints for orchestrating tests, retrieving results, and managing benchmarks
+- **API-Driven Design**: RESTful endpoints for orchestrating tests, retrieving results, and managing benchmarks
 - **Reproducibility**: Deterministic test execution with seed control and fixture management
+- **Comprehensive Tooling**: Integration catalog of 35 security tools across 11 categories
 
-### Why AI Purple Ops?
+### Three-Lane Testing Approach
 
-Modern AI systems require **purple team thinking**—combining offensive security (red team) and defensive validation (blue team) with safety evaluation and compliance documentation. AI Purple Ops unifies these workflows:
+Modern AI systems require purple team thinking—combining offensive security (red team) and defensive validation (blue team) with safety evaluation and compliance documentation. AI Purple Ops unifies these workflows across three operational lanes:
 
 | **Safety Lane** | **Security Lane** | **Compliance Lane** |
 |-----------------|-------------------|---------------------|
 | Content policy violations | Prompt injection attacks | NIST AI RMF measures |
-| Harmful output detection | Tool misuse & privilege escalation | EU AI Act Article 15 |
-| Bias & fairness metrics | Data exfiltration & RAG leakage | FedRAMP control mappings |
+| Harmful output detection | Tool misuse and privilege escalation | EU AI Act Article 15 |
+| Bias and fairness metrics | Data exfiltration and RAG leakage | FedRAMP control mappings |
 | PII leakage prevention | SSRF, RCE, XSS in agents | Evidence pack generation |
 
----
+## Quick Start
 
-## 🚀 Quick Start
-
-> **Note:** Currently in `b01-initial-commit` phase. Runtime implementation begins in `b02-dev-tooling`.
+**Current Status:** Phase b02 (Development Tooling) complete. Core evaluation framework begins in b04.
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/ai-purple-ops.git
-cd ai-purple-ops
+git clone https://github.com/Kennyslaboratory/AI-Purple-Ops.git
+cd AI-Purple-Ops
 
-# Future: Setup environment (b02+)
-# make setup
+# Setup development environment
+make setup
 
-# Future: Run baseline evaluation (b04+)
-# make baseline
+# Run smoke test
+make smoke
 
-# Future: Run adversarial battery (b07+)
-# make battery
+# Run development checks (lint, type, security, tests)
+make ci
 
-# Future: Check release gates (b06+)
-# make gate
+# Available commands
+make help
 ```
 
----
+### Configuration
 
-## 📋 Features
+Configuration is loaded from `configs/harness.yaml` with environment variable overrides. Set `AIPO_*` variables to override configuration values (e.g., `AIPO_OUTPUT_DIR`, `AIPO_LOG_LEVEL`). See [src/harness/utils/config.py](src/harness/utils/config.py) for implementation details.
 
-### Current (b01-initial-commit)
+## Features
 
-- ✅ **Governance Foundation**: Security policies, usage guidelines, contributor agreements
-- ✅ **Compliance Mappings**: YAML-based control mappings for NIST AI RMF, EU AI Act, FedRAMP
-- ✅ **Evidence Schemas**: JSON schemas for run summaries, evidence manifests, conformance reports
-- ✅ **Development Guardrails**: 9 Cursor rules enforcing dev loop, security invariants, tool hygiene
-- ✅ **API Surface**: OpenAPI 3.0 spec with endpoints for benchmarks, runs, and evidence retrieval
-- ✅ **Tool Registry**: Living catalog with deprecation tracking for security tooling
+### Implemented (b01-b02)
 
-### Planned (b02-b10)
+**Governance and Compliance Infrastructure (b01)**
+- Comprehensive security policies and usage guidelines for offensive security tooling
+- Machine-readable compliance mappings for NIST AI RMF, EU AI Act, and FedRAMP
+- JSON schemas for run summaries, evidence manifests, and conformance reports
+- OpenAPI 3.0 specification with endpoints for benchmarks, runs, and evidence retrieval
+- Development workflow rules and ADR process documentation
 
-- 🔄 **Evaluation Framework** (b04): Mock runner, JSON/JUnit reporters, test suite execution
-- 🔄 **Policy Oracles** (b05): Content validation, tool allowlists, SLO thresholds
-- 🔄 **Release Gates** (b06): Automated pass/fail criteria, evidence pack generation
-- 🔄 **Adversarial Suites** (b07): Prompt injection, RAG attacks, UI XSS, property-based fuzzing
-- 🔄 **Tool Simulation** (b08): Safe tool execution with ACLs, redaction, schema validation
-- 🔄 **CI/CD Integration** (b09): GitHub Actions workflows for PR, nightly, and release gates
-- 🔄 **Backend Service** (b10): Dockerized API, observability, production-ready deployment
+**Development Tooling (b02)**
+- Complete Python build system (pyproject.toml, Makefile with 10 targets)
+- Strict code quality enforcement (ruff, black, mypy with strict mode, bandit, pip-audit)
+- Self-healing configuration system (YAML + environment variable precedence)
+- Professional console logging with structured output
+- Automated testing infrastructure (pytest, hypothesis integration)
+- Pre-commit hooks with secrets detection
+- Comprehensive tool registry: 35 security tools across 11 categories
 
----
+### In Development (b03-b10)
 
-## 🏗️ Architecture
+**CLI Skeleton (b03)**
+- Typer-based command-line interface
+- Commands for run, gate, version operations
+- Structured output with help text
+
+**Evaluation Framework (b04)**
+- Mock runner for deterministic test execution
+- JSON and JUnit XML reporters
+- Test suite execution with seed control
+
+**Policy Oracles (b05)**
+- Content policy validation
+- Tool allowlist enforcement
+- SLO threshold monitoring
+
+**Release Gates (b06)**
+- Automated pass/fail criteria
+- Evidence pack generation
+- Conformance report generation
+
+**Adversarial Test Suites (b07)**
+- Prompt injection batteries
+- RAG poisoning and leakage tests
+- UI injection (XSS, SSRF) test cases
+- Property-based fuzzing with Hypothesis
+
+**Tool Simulation (b08)**
+- Safe tool execution sandbox
+- ACL enforcement and redaction
+- Schema validation for tool calls
+
+**CI/CD Integration (b09)**
+- GitHub Actions workflows for PR and nightly runs
+- Branch protection and status checks
+- Release automation
+
+**Production Backend (b10)**
+- Dockerized API service
+- Observability and monitoring
+- Production-ready deployment artifacts
+
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -129,9 +169,7 @@ cd ai-purple-ops
 
 See [docs/architecture/pipeline.md](docs/architecture/pipeline.md) for detailed lifecycle diagram.
 
----
-
-## 📖 Documentation
+## Documentation
 
 | Document | Description |
 |----------|-------------|
@@ -139,164 +177,184 @@ See [docs/architecture/pipeline.md](docs/architecture/pipeline.md) for detailed 
 | [BRANCHES.md](docs/BRANCHES.md) | Branch strategy and acceptance criteria |
 | [COMPLIANCE_OVERVIEW.md](docs/COMPLIANCE_OVERVIEW.md) | Compliance lane architecture |
 | [USAGE_POLICY.md](docs/USAGE_POLICY.md) | Authorized use guidelines for offensive tooling |
-| [TOOLS_MANIFEST.md](docs/TOOLS_MANIFEST.md) | Integrated security tools (PyRIT, garak, Semgrep) |
+| [TOOLS_MANIFEST.md](docs/TOOLS_MANIFEST.md) | Security tool integration manifest |
 | [GOVERNANCE.md](docs/GOVERNANCE.md) | Decision-making and ADR process |
 | [pipeline.md](docs/architecture/pipeline.md) | End-to-end evaluation lifecycle |
+| [REVIEWER_NOTES.md](docs/REVIEWER_NOTES.md) | Code review feedback and action items |
 
-### Runbooks
+### Operational Runbooks
 
 - [Incident Response: Prompt Injection](docs/runbooks/ir_prompt_injection.md)
 - [Rollback Procedures](docs/runbooks/rollback.md)
 - [Release Checklist](docs/runbooks/release_checklist.md)
 
----
+## Integrated Security Tools
 
-## 🛠️ Integrated Tools
+AI Purple Ops maintains a comprehensive registry of 35 security tools across 11 functional categories. All tools are wrapped with adapters providing safe defaults, rate limiting, and audit logging. See [registry/tools.yaml](registry/tools.yaml) and [registry/INTEGRATION_STATUS.md](registry/INTEGRATION_STATUS.md) for complete catalog and integration roadmap.
 
-AI Purple Ops wraps best-in-class security tooling with adapters and safe defaults:
+### LLM Security and Red Teaming (5 tools)
+- **garak** - LLM vulnerability scanner with 100+ probes
+- **PyRIT** - Microsoft's Python Risk Identification Toolkit for LLMs
+- **promptfoo** - LLM testing framework with security assertions
+- **llm-guard** - Comprehensive security toolkit for LLM interactions
+- **rebuff** - Prompt injection detection framework
 
-**Evaluation & Testing**
-- [PyRIT](https://github.com/Azure/PyRIT) - Microsoft's red team framework for LLMs
-- [garak](https://github.com/leondz/garak) - LLM vulnerability scanner
-- [promptfoo](https://github.com/promptfoo/promptfoo) - LLM testing and evaluation
+### Adversarial Machine Learning (4 tools)
+- **ART (Adversarial Robustness Toolbox)** - IBM's adversarial robustness framework
+- **CleverHans** - Adversarial examples library
+- **Foolbox** - Python toolbox for adversarial attacks
+- **TextAttack** - Framework for adversarial attacks on NLP models
 
-**Security Analysis**
-- [Semgrep](https://semgrep.dev) - SAST for orchestrator code
-- [Bandit](https://github.com/PyCQA/bandit) - Python security linting
-- [mitmproxy](https://mitmproxy.org) - HTTP traffic interception
+### Code Security (5 tools)
+- **Semgrep** - SAST with semantic code patterns
+- **Bandit** - Python security linter
+- **pip-audit** - Dependency vulnerability scanner
+- **TruffleHog** - Secrets scanning in code and git history
+- **detect-secrets** - Enterprise secrets detection
 
-**Fuzzing & Property Testing**
-- [Hypothesis](https://hypothesis.readthedocs.io) - Property-based testing
+### Fuzzing and Property Testing (2 tools)
+- **Hypothesis** - Property-based testing for Python
+- **Atheris** - Google's coverage-guided Python fuzzer
 
-**Standards & Frameworks**
-- MITRE ATLAS - Adversarial threat landscape for AI
-- OWASP LLM Top 10 - Common LLM vulnerabilities
-- NIST AI RMF - AI Risk Management Framework
+### Traffic Interception and Monitoring (2 tools)
+- **mitmproxy** - Interactive HTTPS proxy for security testing
+- **OWASP ZAP** - Web application security testing
 
-See [registry/tools.yaml](registry/tools.yaml) for complete catalog with status tracking.
+### Evaluation and Benchmarking (3 tools)
+- **lm-evaluation-harness** - EleutherAI's LLM evaluation framework
+- **HELM** - Stanford's Holistic Evaluation of Language Models
+- **MLflow** - ML lifecycle management with evaluation tracking
 
----
+### Safety and Content Moderation (4 tools)
+- **Detoxify** - Toxic comment classification
+- **NeMo Guardrails** - NVIDIA's programmable guardrails for LLMs
+- **LangKit** - LLM monitoring and guardrails toolkit
+- **Guardrails AI** - LLM validation framework
 
-## 🔬 Research & Standards Alignment
+### RAG Security (3 tools)
+- **LangChain** - Framework with security considerations for RAG
+- **LlamaIndex** - RAG framework with security features
+- **RAGChecker** - Amazon's RAG faithfulness and relevancy checker
 
-AI Purple Ops implements controls and mappings for:
+### Compliance and Governance (3 tools)
+- **AI Fairness 360** - IBM's AI fairness toolkit
+- **Fairlearn** - Microsoft's fairness assessment toolkit
+- **MLTE** - Machine Learning Test and Evaluation framework
 
-### NIST AI Risk Management Framework (AI RMF)
-- **GOVERN**: Policy and oversight (docs/GOVERNANCE.md)
-- **MAP**: Risk identification (mappings/nist_ai_rmf.yaml)
-- **MEASURE**: Evaluation metrics (harmful output rate, tool violations)
-- **MANAGE**: Risk response (runbooks, rollback procedures)
+### Privacy and PII Detection (2 tools)
+- **Presidio** - Microsoft's PII detection and anonymization
+- **Scrubadub** - PII removal from text
 
-### EU AI Act (High-Risk AI Systems)
-- Article 9: Risk management systems
-- Article 10: Data governance
-- Article 11: Technical documentation (Annex IV checklist)
-- Article 15: Accuracy, robustness, and cybersecurity
+### Penetration Testing (2 tools)
+- **NetExec** - Network exploitation framework
+- **CrackMapExec** - Post-exploitation tool (deprecated, replaced by NetExec)
 
-### FedRAMP
-- Control mappings for AC, AU, SI families
+## Standards and Compliance Alignment
+
+AI Purple Ops implements machine-readable control mappings and evidence generation for:
+
+### NIST AI Risk Management Framework (AI RMF 1.0)
+- **GOVERN**: Policy and oversight structures (docs/GOVERNANCE.md)
+- **MAP**: Risk identification and categorization (mappings/nist_ai_rmf.yaml)
+- **MEASURE**: Evaluation metrics including harmful output rate and tool policy violation rate
+- **MANAGE**: Risk response procedures (runbooks, rollback procedures)
+
+### EU AI Act (Regulation 2024/1689)
+- Article 9: Risk management systems for high-risk AI
+- Article 10: Data and data governance requirements
+- Article 11: Technical documentation (Annex IV compliance checklist)
+- Article 15: Accuracy, robustness, and cybersecurity requirements
+
+### FedRAMP (Federal Risk and Authorization Management Program)
+- Control mappings for Access Control (AC), Audit and Accountability (AU), and System and Information Integrity (SI) families
 - OSCAL-compatible evidence generation
-- Continuous monitoring artifacts
+- Continuous monitoring artifacts and assessment reports
 
----
+### Additional Frameworks
+- **MITRE ATLAS**: Adversarial Threat Landscape for Artificial-Intelligence Systems
+- **OWASP LLM Top 10**: Common security risks in LLM applications
+- **ISO/IEC 42001**: AI management system standard (planned)
 
-## 🤝 Contributing
+## Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Contributions are welcome. Please review [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines and the development workflow.
 
-### Development Loop
+### Development Workflow
 
-Every phase follows a 6-step process:
+Each development phase follows a structured 6-step process:
 
-1. **New Branch**: Create `bNN-short-slug` from main
-2. **Threat Model**: Complete threat model template + ADR
-3. **Tests First**: Write pytest tests before implementation
-4. **Manual Exercise**: Create runnable script, document findings
-5. **Housekeeping**: Lint, format, update CHANGELOG and docs
-6. **Human Review**: Request review, address feedback
+1. Create feature branch `bNN-short-slug` from main
+2. Complete threat model template and ADR if introducing new attack surface
+3. Write pytest tests before implementation (test-first development)
+4. Implement functionality with manual validation script
+5. Run linting, formatting, update CHANGELOG and documentation
+6. Submit for human review, address feedback
 
-See [.cursor/rules/dev-loop.md](.cursor/rules/dev-loop.md) for details.
+See [.cursor/rules/dev-loop.md](.cursor/rules/dev-loop.md) for complete workflow details.
 
-### Code Quality
+### Code Quality Standards
 
-- Python 3.11+ with type hints
-- Formatting: `black`, `ruff`
-- Security: `bandit`, `pip-audit`
-- Testing: `pytest` with deterministic fixtures
-- Coverage: Aim for 80%+ on core harness code
+- Python 3.11+ with comprehensive type hints
+- Code formatting: black (100 char), ruff (15+ rule families)
+- Security scanning: bandit (SAST), pip-audit (dependency vulnerabilities)
+- Testing: pytest with deterministic fixtures, hypothesis for property-based testing
+- Type checking: mypy with strict mode enabled
+- Target: 80%+ test coverage on core harness modules
 
----
+## License
 
-## 📜 License
+MIT License. See [LICENSE](LICENSE) for full text.
 
-This project is licensed under the MIT License - see [LICENSE](LICENSE) for details.
+The MIT License permits broad use but provides no warranty. Organizations deploying this software are responsible for ensuring compliance with applicable laws and regulations (GDPR, CCPA, SOC 2, etc.). See [ADR 0002](docs/adr/0002-licensing.md) for licensing rationale.
 
-The MIT License permits broad use but provides no warranty. Organizations are responsible for ensuring compliance with applicable laws and regulations (GDPR, CCPA, SOC 2, etc.). See [ADR 0002](docs/adr/0002-licensing.md) for licensing rationale.
+## Security
 
----
+Report security vulnerabilities via GitHub Security Advisories. See [SECURITY.md](SECURITY.md) for disclosure policy and response timeline commitments.
 
-## 🔒 Security
+## Project Status
 
-Report vulnerabilities via GitHub Security Advisories. See [SECURITY.md](SECURITY.md) for our disclosure policy and response timeline.
-
----
-
-## 📊 Project Status
-
-**Current Phase**: b01-initial-commit (Governance & Compliance Infrastructure)  
-**Next Phase**: b02-dev-tooling (pyproject.toml, Makefile, CLI skeleton)  
-**Target**: b10-backend-api-and-compose (Production-ready backend service)
+**Current Phase:** b02-dev-tooling (Complete)
+**Next Phase:** b03-cli-skeleton
+**Target:** b10-backend-api-and-compose (Production-ready backend service)
 
 | Phase | Status | Description |
 |-------|--------|-------------|
-| b01 | ✅ Complete | Initial scaffold, governance, compliance mappings |
-| b02 | 🔄 Next | Dev tooling (pyproject, pre-commit, Makefile) |
-| b03 | 📋 Planned | CLI skeleton with Typer |
-| b04 | 📋 Planned | Mock runner, reporters, test execution |
-| b05 | 📋 Planned | Policy oracles and validation |
-| b06 | 📋 Planned | Release gates and evidence generation |
-| b07 | 📋 Planned | Adversarial test suites |
-| b08 | 📋 Planned | Tool simulation and RAG security |
-| b09 | 📋 Planned | CI/CD workflows |
-| b10 | 📋 Planned | Production backend service |
+| b01 | Complete | Governance, compliance mappings, evidence schemas |
+| b02 | Complete | Development tooling, configuration system, tool registry |
+| b03 | Planned | CLI skeleton with Typer framework |
+| b04 | Planned | Mock runner, JSON/JUnit reporters, test execution |
+| b05 | Planned | Policy oracles and validation rules |
+| b06 | Planned | Release gates and evidence pack generation |
+| b07 | Planned | Adversarial test suites (prompt injection, RAG, UI) |
+| b08 | Planned | Tool simulation and RAG security features |
+| b09 | Planned | CI/CD workflows and automation |
+| b10 | Planned | Production backend API service |
 
----
-
-## 🎓 Citation
-
-If you use AI Purple Ops in your research or production systems, please cite:
+## Citation
 
 ```bibtex
 @software{aipurpleops2025,
   title = {AI Purple Ops: A Vendor-Neutral Testing Harness for AI Safety, Security, and Compliance},
-  author = {Your Organization},
+  author = {Kenny's Laboratory},
   year = {2025},
-  url = {https://github.com/your-org/ai-purple-ops},
-  version = {0.1.0}
+  url = {https://github.com/Kennyslaboratory/AI-Purple-Ops},
+  version = {0.2.0}
 }
 ```
 
----
+## Acknowledgments
 
-## 🙏 Acknowledgments
-
-Built on the shoulders of giants in AI safety and security research:
-- Microsoft Security Research (PyRIT)
-- OWASP AI Security & Privacy Working Group
+Built on research and tooling from:
+- Microsoft Security Research (PyRIT framework)
+- OWASP AI Security and Privacy Working Group
 - NIST AI Risk Management Framework team
-- EU High-Level Expert Group on AI
-- MITRE ATLAS contributors
+- EU High-Level Expert Group on Artificial Intelligence
+- MITRE ATLAS project contributors
+- IBM Research (Adversarial Robustness Toolbox, AI Fairness 360)
+- Stanford CRFM (HELM evaluation framework)
 
----
+## Contact
 
-## 📞 Contact & Community
-
-- **Issues**: [GitHub Issues](https://github.com/your-org/ai-purple-ops/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-org/ai-purple-ops/discussions)
-- **Security**: See [SECURITY_CONTACTS.md](SECURITY_CONTACTS.md)
-
----
-
-<p align="center">
-  <i>Building the bridge between AI innovation and deployment confidence.</i>
-</p>
+- **Repository**: [https://github.com/Kennyslaboratory/AI-Purple-Ops](https://github.com/Kennyslaboratory/AI-Purple-Ops)
+- **Issues**: [GitHub Issues](https://github.com/Kennyslaboratory/AI-Purple-Ops/issues)
+- **Security**: See [SECURITY.md](SECURITY.md) for vulnerability reporting
