@@ -35,15 +35,21 @@ Modern AI systems require **purple team thinking**—combining offensive securit
 
 ## 🚀 Quick Start
 
-> **Note:** Currently in `b01-initial-commit` phase. Runtime implementation begins in `b02-dev-tooling`.
+> **Note:** Currently in `b02-dev-tooling` phase. Core evaluation begins in `b04`.
 
 ```bash
 # Clone the repository
 git clone https://github.com/your-org/ai-purple-ops.git
 cd ai-purple-ops
 
-# Future: Setup environment (b02+)
-# make setup
+# Setup environment (b02+)
+make setup
+
+# Run smoke test
+make smoke
+
+# Run development checks
+make ci
 
 # Future: Run baseline evaluation (b04+)
 # make baseline
@@ -54,6 +60,12 @@ cd ai-purple-ops
 # Future: Check release gates (b06+)
 # make gate
 ```
+
+### Configuration
+
+Configuration is loaded from `configs/harness.yaml` with environment variable overrides.
+Set `AIPO_*` variables to override config (e.g., `AIPO_OUTPUT_DIR`, `AIPO_LOG_LEVEL`).
+See [src/harness/utils/config.py](src/harness/utils/config.py) for details.
 
 ---
 

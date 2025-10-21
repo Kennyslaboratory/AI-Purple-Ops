@@ -48,7 +48,7 @@ sec: ## Bandit SAST
 		$(VENV)/bin/bandit -q -r src -ll; \
 	fi
 
-audit: ## pip-audit dependencies
+audit: ## pip-audit dependencies (non-fatal, informational only)
 	$(PY) -m pip_audit -s moderate || true
 
 test: ## Run pytest
@@ -60,4 +60,4 @@ smoke: ## Self-healing preflight + style demo
 clean: ## Remove caches and build artifacts
 	rm -rf .pytest_cache .mypy_cache dist build *.egg-info
 
-ci: lint type sec test ## Run core checks
+ci: lint type sec test ## Run core checks (audit not included, see help)
