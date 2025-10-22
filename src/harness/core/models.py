@@ -2,8 +2,22 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
+
+
+@dataclass
+class ModelResponse:
+    """Model invocation response with metadata.
+
+    Contains the text response plus metadata like tokens, latency, cost,
+    finish_reason, etc. Prevents having to change Adapter.invoke() signature
+    when adding detector/evaluator support.
+    """
+
+    text: str
+    meta: dict[str, Any] = field(default_factory=dict)
+    # meta can include: tokens, finish_reason, cost, latency, provider, refusal, etc.
 
 
 @dataclass

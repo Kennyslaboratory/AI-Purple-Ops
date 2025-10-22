@@ -23,9 +23,10 @@ The framework is organized into distinct layers, each with a specific purpose an
 ### ✅ Protocols Defined
 The following interfaces are ready for b04 implementation:
 
-- **`Adapter`** (adapters.py) - Model I/O abstraction
-- **`Runner`** (runners.py) - Test execution orchestration
-- **`Reporter`** (reporters.py) - Result serialization and logging
+- **`Adapter`** (adapters.py) - Model I/O abstraction, returns ModelResponse
+- **`Runner`** (runners.py) - Test execution orchestration, supports batch execution
+- **`Reporter`** (reporters.py) - Result serialization with streaming support
+- **`ModelResponse`** (models.py) - Model response with text + metadata (tokens, cost, latency)
 - **`TestCase`** (models.py) - Test case data model
 - **`RunResult`** (models.py) - Test result data model
 
@@ -43,25 +44,29 @@ The following files exist with TODO roadmaps for future branches:
 ### Importing Core Interfaces
 
 ```python
-from harness.core import Adapter, Runner, Reporter, TestCase, RunResult
+from harness.core import Adapter, ModelResponse, Runner, Reporter, TestCase, RunResult
 ```
 
 ### Example: Implementing an Adapter
 
 ```python
 from typing import Any
-from harness.core import Adapter
+from harness.core import Adapter, ModelResponse
 
 class MockAdapter:
     """Mock adapter for deterministic testing."""
 
-    def invoke(self, prompt: str, **kwargs: Any) -> str:
-        return f"Mock response to: {prompt}"
+    def invoke(self, prompt: str, **kwargs: Any) -> ModelResponse:
+        return ModelResponse(
+            text=f"Mock response to: {prompt}",
+            meta={"tokens": 10, "latency_ms": 50, "model": "mock"}
+        )
 ```
 
 ### Example: Implementing a Runner
 
 ```python
+from typing import Iterator
 from harness.core import Runner, TestCase, RunResult, Adapter
 
 class MockRunner:
@@ -71,13 +76,17 @@ class MockRunner:
         self.adapter = adapter
 
     def execute(self, test_case: TestCase) -> RunResult:
-        response = self.adapter.invoke(test_case.prompt)
+        model_response = self.adapter.invoke(test_case.prompt)
         return RunResult(
             test_id=test_case.id,
-            response=response,
+            response=model_response.text,
             passed=True,
             metadata=test_case.metadata,
         )
+
+    def execute_many(self, cases: list[TestCase]) -> Iterator[RunResult]:
+        for case in cases:
+            yield self.execute(case)
 ```
 
 ## Design Principles

@@ -64,6 +64,7 @@ This is the authoritative source of truth for branch planning and acceptance cri
 - Exit code 1 on failure, 0 on success
 - Evidence pack links to all artifacts
 - Reports include pass/fail summary
+- **IMPORTANT**: Change gate default behavior to fail (exit 1) when summary not found if gates enabled
 
 ## b07-redteam-rag-ui-fuzz
 **Goal:** Adversarial corpora, RAG leakage, UI XSS, Hypothesis fuzz
