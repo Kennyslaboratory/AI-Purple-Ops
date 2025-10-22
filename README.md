@@ -525,47 +525,34 @@ adapters:
 - [Rollback Procedures](docs/runbooks/rollback.md)
 - [Release Checklist](docs/runbooks/release_checklist.md)
 
-## Integrated Security Tools
+## Supported Tools
 
-AI Purple Ops maintains a comprehensive registry of 22 AI-security-focused tools across 7 functional categories. All tools are wrapped with adapters providing safe defaults, rate limiting, and audit logging. See [registry/tools.yaml](registry/tools.yaml) and [registry/INTEGRATION_STATUS.md](registry/INTEGRATION_STATUS.md) for complete catalog and integration roadmap.
+AI Purple Ops integrates 22 AI-security-focused tools. All tools are wrapped with adapters providing safe defaults, rate limiting, and audit logging. See [registry/tools.yaml](registry/tools.yaml) and [registry/INTEGRATION_STATUS.md](registry/INTEGRATION_STATUS.md) for complete catalog and integration roadmap.
 
-### LLM Security and Red Teaming (5 tools)
-- **garak** - LLM vulnerability scanner with 100+ probes
-- **PyRIT** - Microsoft's Python Risk Identification Toolkit for LLMs
-- **promptfoo** - LLM testing framework with security assertions
-- **llm-guard** - Comprehensive security toolkit for LLM interactions
-- **rebuff** - Prompt injection detection framework
-
-### Adversarial Machine Learning (4 tools)
-- **ART (Adversarial Robustness Toolbox)** - IBM's adversarial robustness framework
-- **CleverHans** - Adversarial examples library
-- **Foolbox** - Python toolbox for adversarial attacks
-- **TextAttack** - Framework for adversarial attacks on NLP models
-
-### Property Testing and Fuzzing (1 tool)
-- **Hypothesis** - Property-based testing for AI model behavior
-
-### Evaluation and Benchmarking (2 tools)
-- **lm-evaluation-harness** - EleutherAI's LLM evaluation framework
-- **HELM** - Stanford's Holistic Evaluation of Language Models
-
-### Safety and Content Moderation (4 tools)
-- **Detoxify** - Toxic comment classification
-- **NeMo Guardrails** - NVIDIA's programmable guardrails for LLMs
-- **LangKit** - LLM monitoring and guardrails toolkit
-- **Guardrails AI** - LLM validation framework
-
-### RAG Security (1 tool)
-- **RAGChecker** - Amazon's RAG faithfulness and relevancy checker
-
-### Compliance and Governance (3 tools)
-- **AI Fairness 360** - IBM's AI fairness toolkit
-- **Fairlearn** - Microsoft's fairness assessment toolkit
-- **MLTE** - Machine Learning Test and Evaluation framework
-
-### Privacy and PII Detection (2 tools)
-- **Presidio** - Microsoft's PII detection and anonymization
-- **Scrubadub** - PII removal from text
+| Tool | Category | Description |
+|------|----------|-------------|
+| [garak](https://github.com/leondz/garak) | LLM Security | LLM vulnerability scanner with 100+ probes |
+| [PyRIT](https://github.com/Azure/PyRIT) | LLM Security | Microsoft's Python Risk Identification Toolkit for LLMs |
+| [promptfoo](https://github.com/promptfoo/promptfoo) | LLM Security | LLM testing framework with security assertions |
+| [llm-guard](https://github.com/protectai/llm-guard) | LLM Security | Comprehensive security toolkit for LLM interactions |
+| [rebuff](https://github.com/protectai/rebuff) | LLM Security | Prompt injection detection framework |
+| [ART](https://github.com/Trusted-AI/adversarial-robustness-toolbox) | Adversarial ML | IBM's Adversarial Robustness Toolbox |
+| [CleverHans](https://github.com/cleverhans-lab/cleverhans) | Adversarial ML | Adversarial examples library |
+| [Foolbox](https://github.com/bethgelab/foolbox) | Adversarial ML | Python toolbox for adversarial attacks |
+| [TextAttack](https://github.com/QData/TextAttack) | Adversarial ML | Framework for adversarial attacks on NLP models |
+| [Hypothesis](https://github.com/HypothesisWorks/hypothesis) | Property Testing | Property-based testing for AI model behavior |
+| [lm-evaluation-harness](https://github.com/EleutherAI/lm-evaluation-harness) | Evaluation | EleutherAI's LLM evaluation framework |
+| [HELM](https://github.com/stanford-crfm/helm) | Evaluation | Stanford's Holistic Evaluation of Language Models |
+| [Detoxify](https://github.com/unitaryai/detoxify) | Safety | Toxic comment classification |
+| [NeMo Guardrails](https://github.com/NVIDIA/NeMo-Guardrails) | Safety | NVIDIA's programmable guardrails for LLMs |
+| [LangKit](https://github.com/whylabs/langkit) | Safety | LLM monitoring and guardrails toolkit |
+| [Guardrails AI](https://github.com/guardrails-ai/guardrails) | Safety | LLM validation framework |
+| [RAGChecker](https://github.com/amazon-science/rag-checker) | RAG Security | Amazon's RAG faithfulness and relevancy checker |
+| [AI Fairness 360](https://github.com/Trusted-AI/AIF360) | Compliance | IBM's AI fairness toolkit |
+| [Fairlearn](https://github.com/fairlearn/fairlearn) | Compliance | Microsoft's fairness assessment toolkit |
+| [MLTE](https://github.com/mlte-team/mlte) | Compliance | Machine Learning Test & Evaluation framework |
+| [Presidio](https://github.com/microsoft/presidio) | Privacy | Microsoft's PII detection and anonymization |
+| [Scrubadub](https://github.com/LeapBeyond/scrubadub) | Privacy | PII removal from text |
 
 ## Standards and Compliance Alignment
 
