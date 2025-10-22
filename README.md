@@ -527,7 +527,7 @@ adapters:
 
 ## Integrated Security Tools
 
-AI Purple Ops maintains a comprehensive registry of 35 security tools across 11 functional categories. All tools are wrapped with adapters providing safe defaults, rate limiting, and audit logging. See [registry/tools.yaml](registry/tools.yaml) and [registry/INTEGRATION_STATUS.md](registry/INTEGRATION_STATUS.md) for complete catalog and integration roadmap.
+AI Purple Ops maintains a comprehensive registry of 22 AI-security-focused tools across 7 functional categories. All tools are wrapped with adapters providing safe defaults, rate limiting, and audit logging. See [registry/tools.yaml](registry/tools.yaml) and [registry/INTEGRATION_STATUS.md](registry/INTEGRATION_STATUS.md) for complete catalog and integration roadmap.
 
 ### LLM Security and Red Teaming (5 tools)
 - **garak** - LLM vulnerability scanner with 100+ probes
@@ -542,25 +542,12 @@ AI Purple Ops maintains a comprehensive registry of 35 security tools across 11 
 - **Foolbox** - Python toolbox for adversarial attacks
 - **TextAttack** - Framework for adversarial attacks on NLP models
 
-### Code Security (5 tools)
-- **Semgrep** - SAST with semantic code patterns
-- **Bandit** - Python security linter
-- **pip-audit** - Dependency vulnerability scanner
-- **TruffleHog** - Secrets scanning in code and git history
-- **detect-secrets** - Enterprise secrets detection
+### Property Testing and Fuzzing (1 tool)
+- **Hypothesis** - Property-based testing for AI model behavior
 
-### Fuzzing and Property Testing (2 tools)
-- **Hypothesis** - Property-based testing for Python
-- **Atheris** - Google's coverage-guided Python fuzzer
-
-### Traffic Interception and Monitoring (2 tools)
-- **mitmproxy** - Interactive HTTPS proxy for security testing
-- **OWASP ZAP** - Web application security testing
-
-### Evaluation and Benchmarking (3 tools)
+### Evaluation and Benchmarking (2 tools)
 - **lm-evaluation-harness** - EleutherAI's LLM evaluation framework
 - **HELM** - Stanford's Holistic Evaluation of Language Models
-- **MLflow** - ML lifecycle management with evaluation tracking
 
 ### Safety and Content Moderation (4 tools)
 - **Detoxify** - Toxic comment classification
@@ -568,9 +555,7 @@ AI Purple Ops maintains a comprehensive registry of 35 security tools across 11 
 - **LangKit** - LLM monitoring and guardrails toolkit
 - **Guardrails AI** - LLM validation framework
 
-### RAG Security (3 tools)
-- **LangChain** - Framework with security considerations for RAG
-- **LlamaIndex** - RAG framework with security features
+### RAG Security (1 tool)
 - **RAGChecker** - Amazon's RAG faithfulness and relevancy checker
 
 ### Compliance and Governance (3 tools)
@@ -581,10 +566,6 @@ AI Purple Ops maintains a comprehensive registry of 35 security tools across 11 
 ### Privacy and PII Detection (2 tools)
 - **Presidio** - Microsoft's PII detection and anonymization
 - **Scrubadub** - PII removal from text
-
-### Penetration Testing (2 tools)
-- **NetExec** - Network exploitation framework
-- **CrackMapExec** - Post-exploitation tool (deprecated, replaced by NetExec)
 
 ## Standards and Compliance Alignment
 

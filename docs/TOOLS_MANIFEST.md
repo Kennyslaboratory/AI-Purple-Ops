@@ -5,14 +5,6 @@ Prompt and eval
 - garak
 - promptfoo
 
-HTTP choke point
-- mitmproxy or OWASP ZAP
-
-Code scanning for the orchestrator
-- Semgrep
-- Bandit
-- pip-audit
-
 Fuzz
 - Hypothesis
 

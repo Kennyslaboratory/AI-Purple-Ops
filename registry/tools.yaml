@@ -1,6 +1,6 @@
 # AI Purple Ops Tool Registry
-# Categories: llm_security, adversarial_ml, code_security, fuzzing, traffic_interception,
-#             evaluation, safety, rag_security, compliance, privacy, pentest
+# Categories: llm_security, adversarial_ml, fuzzing, evaluation, safety,
+#             rag_security, compliance, privacy
 
 tools:
   # === LLM Security & Red Teaming ===
@@ -77,77 +77,11 @@ tools:
     last_checked: 2025-10-20
     replacements: []
 
-  # === Code Security (Orchestrator Analysis) ===
-  - id: semgrep
-    category: code_security
-    repo: https://github.com/semgrep/semgrep
-    description: SAST with semantic code patterns
-    status: active
-    last_checked: 2025-10-20
-    replacements: []
-
-  - id: bandit
-    category: code_security
-    repo: https://github.com/PyCQA/bandit
-    description: Python security linter
-    status: active
-    last_checked: 2025-10-20
-    replacements: []
-
-  - id: pip-audit
-    category: code_security
-    repo: https://github.com/pypa/pip-audit
-    description: Dependency vulnerability scanner
-    status: active
-    last_checked: 2025-10-20
-    replacements: []
-
-  - id: trufflehog
-    category: code_security
-    repo: https://github.com/trufflesecurity/trufflehog
-    description: Secrets scanning in code and git history
-    status: active
-    last_checked: 2025-10-20
-    replacements: []
-
-  - id: detect-secrets
-    category: code_security
-    repo: https://github.com/Yelp/detect-secrets
-    description: Enterprise secrets detection
-    status: active
-    last_checked: 2025-10-20
-    replacements: []
-
   # === Fuzzing & Property Testing ===
   - id: hypothesis
     category: fuzzing
     repo: https://github.com/HypothesisWorks/hypothesis
     description: Property-based testing for Python
-    status: active
-    last_checked: 2025-10-20
-    replacements: []
-
-  - id: atheris
-    category: fuzzing
-    repo: https://github.com/google/atheris
-    description: Google's coverage-guided Python fuzzer
-    status: active
-    last_checked: 2025-10-20
-    replacements: []
-
-  # === Traffic Interception & Monitoring ===
-  - id: mitmproxy
-    category: traffic_interception
-    repo: https://github.com/mitmproxy/mitmproxy
-    description: Interactive HTTPS proxy for security testing
-    status: active
-    last_checked: 2025-10-20
-    replacements: []
-
-  - id: owasp-zap
-    category: traffic_interception
-    repo: https://github.com/zaproxy/zaproxy
-    description: OWASP Zed Attack Proxy for web security
     status: active
     last_checked: 2025-10-20
     replacements: []
@@ -165,14 +99,6 @@ tools:
     category: evaluation
     repo: https://github.com/stanford-crfm/helm
     description: Stanford's Holistic Evaluation of Language Models
-    status: active
-    last_checked: 2025-10-20
-    replacements: []
-
-  - id: mlflow
-    category: evaluation
-    repo: https://github.com/mlflow/mlflow
-    description: ML lifecycle management with evaluation tracking
     status: active
     last_checked: 2025-10-20
     replacements: []
@@ -211,22 +137,6 @@ tools:
     replacements: []
 
   # === RAG Security ===
-  - id: langchain-security
-    category: rag_security
-    repo: https://github.com/langchain-ai/langchain
-    description: LangChain with security considerations for RAG
-    status: active
-    last_checked: 2025-10-20
-    replacements: []
-
-  - id: llama-index
-    category: rag_security
-    repo: https://github.com/run-llama/llama_index
-    description: LlamaIndex with RAG security features
-    status: active
-    last_checked: 2025-10-20
-    replacements: []
-
   - id: ragchecker
     category: rag_security
     repo: https://github.com/amazon-science/rag-checker
@@ -273,24 +183,6 @@ tools:
     category: privacy
     repo: https://github.com/LeapBeyond/scrubadub
     description: Remove PII from dirty text
-    status: active
-    last_checked: 2025-10-20
-    replacements: []
-
-  # === Penetration Testing (Deprecated) ===
-  - id: crackmapexec
-    category: pentest
-    repo: https://github.com/Porchetta-Industries/CrackMapExec
-    description: Post-exploitation tool (deprecated)
-    status: deprecated
-    replaced_by: netexec
-    last_checked: 2025-10-20
-    replacements: [netexec]
-
-  - id: netexec
-    category: pentest
-    repo: https://github.com/Pennyw0rth/NetExec
-    description: CrackMapExec successor for network exploitation
     status: active
     last_checked: 2025-10-20
     replacements: []
