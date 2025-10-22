@@ -16,6 +16,7 @@ AI Purple Ops addresses the gap between AI capability development and deployment
 - **Compliance-First Architecture**: Machine-readable mappings to NIST AI RMF, EU AI Act, and FedRAMP controls
 - **Evidence Automation**: Structured JSON schemas for audit trails, conformance reports, and evidence packs
 - **Vendor Neutrality**: Adapter-based design for models, platforms, and tooling integration
+- **Workflow Templates (Recipes)**: Pre-configured test suites for safety, security, and compliance (b06+)
 - **API-Driven Design**: RESTful endpoints for orchestrating tests, retrieving results, and managing benchmarks
 - **Reproducibility**: Deterministic test execution with seed control and fixture management
 - **Comprehensive Tooling**: Integration catalog of 35 security tools across 11 categories
@@ -30,6 +31,56 @@ Modern AI systems require purple team thinking—combining offensive security (r
 | Harmful output detection | Tool misuse and privilege escalation | EU AI Act Article 15 |
 | Bias and fairness metrics | Data exfiltration and RAG leakage | FedRAMP control mappings |
 | PII leakage prevention | SSRF, RCE, XSS in agents | Evidence pack generation |
+
+## Recipe-Based Workflows (Coming in b06)
+
+AI Purple Ops includes **pre-configured workflow templates (recipes)** that eliminate setup complexity:
+
+### Three Recipe Libraries
+
+**Safety Recipes** - AI safety benchmarking templates
+- `content_policy_baseline` - Basic content safety check
+- `bias_fairness_audit` - Fairness assessment
+- `pii_leakage_scan` - Privacy verification
+- `toxicity_detection` - Toxic output detection
+
+**Security Recipes** - AI security red teaming templates
+- `owasp_llm_top10` - Complete OWASP LLM security suite
+- `prompt_injection_battery` - Comprehensive jailbreak testing
+- `rag_security_suite` - RAG attacks and leakage tests
+- `tool_misuse_scenarios` - Agent security testing
+
+**Compliance Recipes** - Goal-oriented compliance templates
+- `nist_ai_rmf_measure` - NIST AI RMF MEASURE phase
+- `eu_ai_act_article15` - EU AI Act high-risk requirements
+- `fedramp_continuous_monitoring` - FedRAMP controls
+- `iso42001_audit_pack` - ISO 42001 certification prep
+
+### Example: Run OWASP LLM Top 10 in 30 Seconds
+
+```bash
+# Point recipe to your model
+export MODEL_ADAPTER=openai_gpt4
+
+# Run pre-configured security suite
+python -m cli.harness recipe run recipes/security/owasp_llm_top10.yaml
+
+# Results in 2 minutes:
+✓ Prompt injection: 12/15 attacks blocked
+✗ Tool misuse: 3/10 attacks succeeded
+✓ Data leakage: 0/8 leaks detected
+! GATE FAILED: tool_misuse_rate 30% exceeds threshold 5%
+
+Evidence pack: out/evidence/owasp_llm_top10_20251021.zip
+```
+
+**What Makes Recipes Powerful:**
+- **Zero Configuration**: Just point to your model adapter
+- **Instant Results**: Pre-configured detectors, evaluators, and thresholds
+- **Evidence Automation**: Compliance artifacts generated automatically
+- **Battle-Tested**: Recipes encode security best practices
+
+See [docs/RECIPES.md](docs/RECIPES.md) for complete recipe system design.
 
 ## Quick Start
 
@@ -51,6 +102,10 @@ make ci
 
 # Available commands
 make help
+
+# (Future b06+) Run a pre-built security recipe
+export MODEL_ADAPTER=openai_gpt4
+python -m cli.harness recipe run recipes/security/prompt_injection_battery.yaml
 ```
 
 ### Configuration
@@ -435,6 +490,7 @@ adapters:
 - Detector and evaluator plugins
 - Full test suite execution
 - Evidence pack generation
+- **Recipe system with 15+ pre-built workflows**
 
 ### Next Steps After b03
 
