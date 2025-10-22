@@ -1,7 +1,7 @@
 # AI Purple Ops
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.2.0-green.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.3.1-green.svg)](CHANGELOG.md)
 [![Status](https://img.shields.io/badge/status-alpha-orange.svg)](docs/ROADMAP.md)
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](pyproject.toml)
 
@@ -19,7 +19,7 @@ AI Purple Ops addresses the gap between AI capability development and deployment
 - **Workflow Templates (Recipes)**: Pre-configured test suites for safety, security, and compliance (b06+)
 - **API-Driven Design**: RESTful endpoints for orchestrating tests, retrieving results, and managing benchmarks
 - **Reproducibility**: Deterministic test execution with seed control and fixture management
-- **Comprehensive Tooling**: Integration catalog of 35 security tools across 11 categories
+- **Comprehensive Tooling**: Integration catalog of 22 AI-security-focused tools across 7 categories
 
 ### Three-Lane Testing Approach
 
@@ -84,7 +84,7 @@ See [docs/RECIPES.md](docs/RECIPES.md) for complete recipe system design.
 
 ## Quick Start
 
-**Current Status:** Phase b02 (Development Tooling) complete. Core evaluation framework begins in b04.
+**Current Status:** Phase b03 (CLI Skeleton) complete. CI/DX tooling (b03.5) merged. Core evaluation framework begins in b04.
 
 ```bash
 # Clone the repository
@@ -94,8 +94,8 @@ cd AI-Purple-Ops
 # Setup development environment
 make setup
 
-# Run smoke test
-make smoke
+# Run tests
+make test
 
 # Run development checks (lint, type, security, tests)
 make ci
@@ -124,20 +124,30 @@ Configuration is loaded from `configs/harness.yaml` with environment variable ov
 - Development workflow rules and ADR process documentation
 
 **Development Tooling (b02)**
-- Complete Python build system (pyproject.toml, Makefile with 10 targets)
-- Strict code quality enforcement (ruff, black, mypy with strict mode, bandit, pip-audit)
+- Complete Python build system (pyproject.toml, Makefile with 10+ targets)
+- Strict code quality enforcement (ruff, black, mypy with strict mode, bandit)
 - Self-healing configuration system (YAML + environment variable precedence)
 - Professional console logging with structured output
 - Automated testing infrastructure (pytest, hypothesis integration)
 - Pre-commit hooks with secrets detection
-- Comprehensive tool registry: 35 security tools across 11 categories
-
-### In Development (b03-b10)
+- Comprehensive tool registry: 22 AI-security-focused tools across 7 categories
 
 **CLI Skeleton (b03)**
-- Typer-based command-line interface
-- Commands for run, gate, version operations
-- Structured output with help text
+- Typer-based command-line interface with run, gate, and version commands
+- Config override support via CLI arguments and environment variables
+- Structured output with comprehensive help text
+- Integration tests for CLI operations
+- Core protocol definitions (Adapter, Runner, Reporter, Gate)
+
+**CI and Developer Experience (b03.5)**
+- GitHub Actions CI workflow with automated testing and recipe validation
+- Gate protocol implementation (Gate, GateResult, ThresholdGate)
+- Evidence pack specification and validation tooling
+- Adapter scaffolding script (scripts/new-adapter.sh)
+- FastAPI stub server for API development
+- Recipe JSON schema for validation
+
+### In Development (b04-b10)
 
 **Evaluation Framework (b04)**
 - Mock runner for deterministic test execution
@@ -454,7 +464,7 @@ adapters:
 
 **Batteries Included, Fully Extensible:**
 
-- **35+ security tools** pre-integrated in the registry
+- **22 AI-security tools** pre-integrated in the registry
 - **Adapter interface** abstracts model differences
 - **Probe library** with 100+ adversarial payloads (b07+)
 - **Detector plugins** for content, PII, policy violations
@@ -476,20 +486,25 @@ adapters:
 - Override any config via environment variables or CLI flags
 - Deterministic and reproducible with seed control
 
-### Current Status: What Works Today (b03)
+### Current Status: What Works Today (b03.5)
 
-✅ **Adapters**: Protocol defined, mock implementation in b04
-✅ **CLI**: Run, gate, version commands functional
+✅ **Adapters**: Protocol defined (ModelResponse, invoke method)
+✅ **CLI**: Run, gate, version commands functional with config overrides
 ✅ **Config System**: YAML + env var overrides working
 ✅ **Logging**: Structured console output with Rich
-✅ **Tool Registry**: 35 tools cataloged and ready
+✅ **Tool Registry**: 22 AI-security tools cataloged and ready
+✅ **CI/CD**: GitHub Actions workflow with automated testing
+✅ **Gates**: Protocol and ThresholdGate implementation ready
+✅ **Evidence**: Pack specification and validation tooling
+✅ **DX Tools**: Adapter scaffolding and recipe validation scripts
 
 🚧 **Coming in b04-b08**:
 - Real adapter implementations (OpenAI, Anthropic, etc.)
+- MockRunner with deterministic execution
+- JSON and JUnit reporters with streaming support
 - Probe libraries with adversarial payloads
 - Detector and evaluator plugins
 - Full test suite execution
-- Evidence pack generation
 - **Recipe system with 15+ pre-built workflows**
 
 ### Next Steps After b03
@@ -618,22 +633,23 @@ Report security vulnerabilities via GitHub Security Advisories. See [SECURITY.md
 
 ## Project Status
 
-**Current Phase:** b02-dev-tooling (Complete)
-**Next Phase:** b03-cli-skeleton
+**Current Phase:** b03.5-ci-and-dx (Complete) → **v0.3.1**
+**Next Phase:** b04-runner-mock
 **Target:** b10-backend-api-and-compose (Production-ready backend service)
 
 | Phase | Status | Description |
 |-------|--------|-------------|
-| b01 | Complete | Governance, compliance mappings, evidence schemas |
-| b02 | Complete | Development tooling, configuration system, tool registry |
-| b03 | Planned | CLI skeleton with Typer framework |
-| b04 | Planned | Mock runner, JSON/JUnit reporters, test execution |
-| b05 | Planned | Policy oracles and validation rules |
-| b06 | Planned | Release gates and evidence pack generation |
-| b07 | Planned | Adversarial test suites (prompt injection, RAG, UI) |
-| b08 | Planned | Tool simulation and RAG security features |
-| b09 | Planned | CI/CD workflows and automation |
-| b10 | Planned | Production backend API service |
+| b01 | ✅ Complete | Governance, compliance mappings, evidence schemas |
+| b02 | ✅ Complete | Development tooling, configuration system, tool registry |
+| b03 | ✅ Complete | CLI skeleton with Typer framework |
+| b03.5 | ✅ Complete | CI workflows, Gates protocol, Evidence pack spec, DX tools |
+| b04 | 🚧 Next | Mock runner, JSON/JUnit reporters, test execution |
+| b05 | 📋 Planned | Policy oracles and validation rules |
+| b06 | 📋 Planned | Release gates and **recipe engine** |
+| b07 | 📋 Planned | Adversarial test suites + **security recipes** |
+| b08 | 📋 Planned | Tool simulation + **compliance recipes** |
+| b09 | 📋 Planned | Recipe validation in CI |
+| b10 | 📋 Planned | Production backend API service + **recipe marketplace** |
 
 ## Citation
 
@@ -643,7 +659,7 @@ Report security vulnerabilities via GitHub Security Advisories. See [SECURITY.md
   author = {Kenny's Laboratory},
   year = {2025},
   url = {https://github.com/Kennyslaboratory/AI-Purple-Ops},
-  version = {0.2.0}
+  version = {0.3.1}
 }
 ```
 

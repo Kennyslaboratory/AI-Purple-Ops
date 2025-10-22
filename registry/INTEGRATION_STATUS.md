@@ -3,9 +3,10 @@
 ## Current State (b02)
 
 ### ✅ Registry Complete
-- **33 tools** cataloged in `tools.yaml`
-- **11 categories** covering the full AI purple team stack
+- **22 AI-security-focused tools** cataloged in `tools.yaml`
+- **7 categories** covering AI safety, security, and compliance testing
 - All tools have repos, descriptions, and status tracking
+- Infrastructure/dev tools removed (not for end-user AI testing)
 
 ### 🔧 Adapters TODO
 The `adapters/` directory is currently **placeholder-only**. Adapter implementation happens in phases **b04-b08**:
@@ -37,14 +38,12 @@ The `adapters/` directory is currently **placeholder-only**. Adapter implementat
 - `art` - IBM adversarial robustness
 - `textattack` - NLP adversarial attacks
 
-**Fuzzing:**
-- `hypothesis` - Property-based testing
-- `atheris` - Coverage-guided fuzzing
+**Property Testing:**
+- `hypothesis` - Property-based testing for AI model behavior
 
 ### Phase 3: RAG & Tool Security (b08)
 **RAG Security adapters:**
-- `langchain-security` - LangChain with ACLs
-- `llama-index` - LlamaIndex with redaction
+- `ragchecker` - Amazon's RAG faithfulness checker
 
 **Privacy:**
 - `presidio` - PII detection/anonymization
@@ -55,23 +54,12 @@ The `adapters/` directory is currently **placeholder-only**. Adapter implementat
 - `detoxify` - Toxicity detection
 - `langkit` - LLM monitoring
 
-### Phase 4: CI/CD Integration (b09)
-**Code Security** (already used in dev):
-- `semgrep` - SAST (configured)
-- `bandit` - Python security (configured)
-- `pip-audit` - Dependency scanning (configured)
-- `trufflehog` - Secrets scanning (TODO)
-- `detect-secrets` - Enterprise secrets (TODO)
-
-**Traffic Monitoring:**
-- `mitmproxy` - HTTPS interception
-- `owasp-zap` - Web app security
-
-### Phase 5: Production Backend (b10)
+### Phase 4: Evaluation & Benchmarking (b09)
 **Evaluation & Benchmarking:**
 - `lm-evaluation-harness` - EleutherAI evals
 - `helm` - Stanford holistic evaluation
-- `mlflow` - Lifecycle management
+
+### Phase 5: Production Backend (b10)
 
 **Compliance:**
 - `ai-fairness-360` - Bias detection
@@ -123,10 +111,11 @@ adapters:
 ## What's Ready Now?
 
 ### ✅ Ready for Integration
-1. **Registry catalog** - All 33 tools documented
+1. **Registry catalog** - 22 AI-security-focused tools documented
 2. **Configuration system** - `AdaptersConfig` in `src/harness/utils/config.py`
 3. **Benchmark mappings** - `registry/benchmarks.yaml` references adapters
 4. **Directory structure** - `adapters/` hierarchy exists
+5. **Core protocols** - Adapter, Runner, Reporter, Gate interfaces defined
 
 ### 🚧 Still Needed
 1. **Adapter implementations** - Python classes for each tool (b04-b08)
@@ -136,9 +125,9 @@ adapters:
 
 ## Summary
 
-The **registry is complete and ready** - it's a well-organized catalog of 33 tools across 11 categories.
+The **registry is complete and ready** - it's a focused catalog of 22 AI-security-focused tools across 7 categories. Infrastructure and dev tools have been removed to keep the focus on end-user AI system testing.
 
-Adapters will be built **incrementally across phases b04-b08**, starting with core functionality (mock models, content filters) and progressively adding security testing tools (garak, PyRIT), RAG security (LangChain, LlamaIndex), and compliance tools (fairness, evaluation frameworks).
+Adapters will be built **incrementally across phases b04-b08**, starting with core functionality (mock models, content filters) and progressively adding security testing tools (garak, PyRIT), RAG security (RAGChecker), and compliance tools (fairness, evaluation frameworks).
 
 The adapter pattern is already established in `config.py`, so integrating new tools follows a consistent template. Each phase is demo-ready, ensuring the system stays working as complexity grows.
 
