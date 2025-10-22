@@ -7,10 +7,10 @@ from .errors import PreflightError
 from .logging import log
 
 
-def preflight() -> None:
+def preflight(yaml_path: str | None = None) -> None:
     """Basic self-healing checks to make dev UX smooth."""
     with log.section("Preflight"):
-        cfg = load_config()
+        cfg = load_config(yaml_path)
         # Sanity for dirs is already ensured in load_config; re-affirm with logs.
         for p in [cfg.run.output_dir, cfg.run.reports_dir, cfg.run.transcripts_dir]:
             if not Path(p).exists():

@@ -1,0 +1,172 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/Kennyslaboratory/AI-Purple-Ops/schemas/recipe.schema.json",
+  "title": "AI Purple Ops Recipe Schema",
+  "description": "Schema for recipe YAML workflow templates",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["version", "metadata", "config", "execution"],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 1,
+      "description": "Recipe schema version"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Recipe metadata and identification",
+      "required": ["name", "lane"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable recipe name"
+        },
+        "description": {
+          "type": "string",
+          "description": "What this recipe does"
+        },
+        "lane": {
+          "enum": ["safety", "security", "compliance"],
+          "description": "Primary recipe lane"
+        },
+        "framework": {
+          "type": "string",
+          "description": "Associated framework (nist_ai_rmf, owasp_llm, eu_ai_act, etc.)"
+        },
+        "author": {
+          "type": "string",
+          "description": "Recipe author"
+        },
+        "last_updated": {
+          "type": "string",
+          "format": "date",
+          "description": "Last update date (YYYY-MM-DD)"
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Searchable tags"
+        }
+      }
+    },
+    "config": {
+      "type": "object",
+      "description": "User configuration section",
+      "required": ["adapter"],
+      "properties": {
+        "adapter": {
+          "type": "string",
+          "description": "Model adapter name or ${MODEL_ADAPTER} variable"
+        },
+        "seed": {
+          "type": ["integer", "string"],
+          "description": "Random seed for deterministic execution"
+        },
+        "output_dir": {
+          "type": "string",
+          "description": "Output directory path"
+        }
+      }
+    },
+    "execution": {
+      "type": "object",
+      "description": "Pre-configured execution plan",
+      "properties": {
+        "benchmarks": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Benchmark IDs from registry/benchmarks.yaml"
+        },
+        "suites": {
+          "type": "array",
+          "items": {
+            "enum": ["normal", "redteam", "rag", "ui", "regression"]
+          },
+          "description": "Test suites to execute"
+        },
+        "detectors": {
+          "type": "array",
+          "description": "Detector configurations",
+          "items": {
+            "type": "object"
+          }
+        },
+        "evaluators": {
+          "type": "array",
+          "description": "Evaluator configurations",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "description": "Output configuration",
+      "properties": {
+        "reports": {
+          "type": "array",
+          "description": "Report outputs",
+          "items": {
+            "type": "object",
+            "required": ["type", "path"],
+            "properties": {
+              "type": {
+                "enum": ["json", "junit", "csv", "html"],
+                "description": "Report format"
+              },
+              "path": {
+                "type": "string",
+                "description": "Output file path"
+              }
+            }
+          }
+        },
+        "evidence_pack": {
+          "type": "object",
+          "description": "Evidence pack configuration",
+          "required": ["path"],
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Evidence pack zip file path"
+            },
+            "include": {
+              "type": "array",
+              "items": {
+                "enum": ["summary", "transcripts", "conformance_report", "control_mappings", "metrics"]
+              },
+              "description": "Artifacts to include in evidence pack"
+            }
+          }
+        },
+        "compliance_artifacts": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Additional compliance-specific artifacts"
+        }
+      }
+    },
+    "gate": {
+      "type": "object",
+      "description": "Automated pass/fail gate configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable gate checking",
+          "default": true
+        },
+        "fail_on": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Conditions that cause gate failure (e.g., 'harmful_output_rate > 0')"
+        },
+        "warn_on": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Conditions that trigger warnings"
+        }
+      }
+    }
+  }
+}

@@ -57,31 +57,40 @@ This is the authoritative source of truth for branch planning and acceptance cri
 - Oracles have unit tests
 
 ## b06-gate-and-reports
-**Goal:** Stop ship gate and evidence JSON and JUnit
+**Goal:** Stop ship gate and evidence JSON and JUnit **+ Recipe engine**
 **Done when:**
 - make gate command works
 - Gate fails on threshold breach
 - Exit code 1 on failure, 0 on success
 - Evidence pack links to all artifacts
 - Reports include pass/fail summary
+- **IMPORTANT**: Change gate default behavior to fail (exit 1) when summary not found if gates enabled
+- **Recipe engine can load and execute YAML recipes**
+- **3 reference recipes work end-to-end (safety, security, compliance)**
+- **CLI commands: recipe run, recipe list, recipe validate**
+- **Recipe schema documented in docs/RECIPES.md**
 
 ## b07-redteam-rag-ui-fuzz
-**Goal:** Adversarial corpora, RAG leakage, UI XSS, Hypothesis fuzz
+**Goal:** Adversarial corpora, RAG leakage, UI XSS, Hypothesis fuzz **+ Security recipes**
 **Done when:**
 - Red-team suite has 20+ adversarial prompts
 - RAG suite tests for leakage and poisoning
 - UI suite has XSS and injection cases
 - Fuzz tests run with Hypothesis
 - All suites integrated into battery
+- **6 security recipes implemented (OWASP LLM focus)**
+- **Recipe testing framework with fixtures**
 
 ## b08-retrievers-simtools
-**Goal:** ACL and redaction, simulated tools, action schema
+**Goal:** ACL and redaction, simulated tools, action schema **+ Compliance recipes**
 **Done when:**
 - Retriever adapter with ACL checks
 - Redaction for PII and secrets
 - Simulated tools (file, http, db) with schema
 - Tool allowlist enforcement
 - Action validation before execution
+- **5 compliance recipes implemented (NIST, EU, FedRAMP, ISO)**
+- **Evidence pack templates for each framework**
 
 ## b09-ci-workflows
 **Goal:** PR, nightly, release gate workflows
