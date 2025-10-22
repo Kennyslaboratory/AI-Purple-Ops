@@ -1,0 +1,862 @@
+============================================================
+AI Purple Ops - Branch b03-cli-skeleton
+Full Git Diff History for Code Review
+============================================================
+
+Branch: b03-cli-skeleton
+Base: main
+Commits: 2 total
+- b58e3e1: [B03] CLI skeleton: Typer-based CLI with run, gate, version
+- 6edcc6b: [B03.1] Bootstrap core interfaces: Adapters, Runners, Reporters, Models
+
+Generated: 2025-10-21
+
+============================================================
+COMMIT SUMMARY
+============================================================
+
+6edcc6b (HEAD -> b03-cli-skeleton) [B03.1] Bootstrap core interfaces: Adapters, Runners, Reporters, Models
+b58e3e1 (origin/b03-cli-skeleton) [B03] CLI skeleton: Typer-based CLI with run, gate, version
+
+============================================================
+FILE CHANGES SUMMARY
+============================================================
+
+ cli/__init__.py                         |   1 +
+ cli/__main__.py                         |   8 ++
+ cli/harness.py                          | 151 ++++++++++++++++++++++++++++++++
+ docs/CLI.md                             | 139 +++++++++++++++++++++++++++++
+ ruff.toml                               |   3 +-
+ src/harness/core/README.md              | 135 ++++++++++++++++++++++++++++
+ src/harness/core/__init__.py            |  17 ++++
+ src/harness/core/adapters.py            |  16 ++++
+ src/harness/core/detectors.py           |   8 ++
+ src/harness/core/evaluators.py          |   7 ++
+ src/harness/core/exploits.py            |   7 ++
+ src/harness/core/models.py              |  29 ++++++
+ src/harness/core/mutators.py            |   7 ++
+ src/harness/core/probes.py              |   8 ++
+ src/harness/core/reporters.py           |  19 ++++
+ src/harness/core/runners.py             |  18 ++++
+ src/harness/utils/preflight.py          |   4 +-
+ tests/integration/test_cli_help.py      |  17 ++++
+ tests/integration/test_cli_run_smoke.py |  54 ++++++++++++
+ tests/integration/test_cli_version.py   |  17 ++++
+ tests/unit/test_core_imports.py         |  10 +++
+ 21 files changed, 672 insertions(+), 3 deletions(-)
+
+============================================================
+FULL DIFF - ALL CHANGES
+============================================================
+
+diff --git a/cli/__init__.py b/cli/__init__.py
+new file mode 100644
+index 0000000..4de3b04
+--- /dev/null
++++ b/cli/__init__.py
+@@ -0,0 +1 @@
++"""CLI package for AI Purple Ops."""
+diff --git a/cli/__main__.py b/cli/__main__.py
+new file mode 100644
+index 0000000..918b59e
+--- /dev/null
++++ b/cli/__main__.py
+@@ -0,0 +1,8 @@
++"""Allow python -m cli.harness execution."""
++
++from __future__ import annotations
++
++from cli.harness import main
++
++if __name__ == "__main__":
++    main()
+diff --git a/cli/harness.py b/cli/harness.py
+new file mode 100644
+index 0000000..178160b
+--- /dev/null
++++ b/cli/harness.py
+@@ -0,0 +1,151 @@
++"""Typer-based CLI for AI Purple Ops."""
++
++from __future__ import annotations
++
++import json
++import os
++import uuid
++from datetime import UTC, datetime
++from pathlib import Path
++
++import typer
++
++from harness import __version__
++from harness.utils.config import HarnessConfig, load_config
++from harness.utils.errors import HarnessError
++from harness.utils.logging import log
++from harness.utils.preflight import preflight
++
++app = typer.Typer(add_completion=False, help="AI Purple Ops CLI")
++
++
++def _apply_cli_overrides(
++    cfg: HarnessConfig,
++    output_dir: str | None,
++    reports_dir: str | None,
++    transcripts_dir: str | None,
++    log_level: str | None,
++    seed: int | None,
++) -> HarnessConfig:
++    """Apply CLI overrides to configuration."""
++    # Aliasing for brevity
++    run = cfg.run
++    if output_dir:
++        run.output_dir = output_dir
++    if reports_dir:
++        run.reports_dir = reports_dir
++    if transcripts_dir:
++        run.transcripts_dir = transcripts_dir
++    if log_level:
++        run.log_level = log_level
++    if seed is not None:
++        run.seed = int(seed)
++    return cfg
++
++
++@app.command("version")
++def version_cmd() -> None:
++    """Print version."""
++    log.info(f"AI Purple Ops version {__version__}")
++    log.ok("Done")
++
++
++@app.command("run")
++def run_cmd(
++    suite: str = typer.Option("normal", "--suite", "-s", help="Suite name to execute."),
++    config: Path | None = typer.Option(
++        None, "--config", "-c", help="Path to configs/harness.yaml."
++    ),
++    output_dir: Path | None = typer.Option(None, "--output-dir", help="Override run.output_dir."),
++    reports_dir: Path | None = typer.Option(
++        None, "--reports-dir", help="Override run.reports_dir."
++    ),
++    transcripts_dir: Path | None = typer.Option(
++        None, "--transcripts-dir", help="Override run.transcripts_dir."
++    ),
++    log_level: str | None = typer.Option(None, "--log-level", help="Override run.log_level."),
++    seed: int | None = typer.Option(None, "--seed", help="Override run.seed."),
++    dry_run: bool = typer.Option(
++        True, "--dry-run/--no-dry-run", help="Write a small JSON artifact only."
++    ),
++) -> None:
++    """Smoke execution. Preflight, then write a small JSON so gates have something to read."""
++    try:
++        cfg = load_config(str(config) if config else None)
++        cfg = _apply_cli_overrides(
++            cfg,
++            str(output_dir) if output_dir else None,
++            str(reports_dir) if reports_dir else None,
++            str(transcripts_dir) if transcripts_dir else None,
++            log_level,
++            seed,
++        )
++
++        preflight(str(config) if config else None)
++
++        now = datetime.now(UTC)
++        run_id = f"draft-{now.strftime('%Y%m%dT%H%M%S')}-{os.getpid()}-{uuid.uuid4().hex[:6]}"
++        artifact = Path(cfg.run.reports_dir) / "cli_run_smoke.json"
++
++        with log.section("Run skeleton"):
++            payload = {
++                "run_id": run_id,
++                "suite": suite,
++                "version": __version__,
++                "utc_started": now.isoformat(timespec="seconds"),
++                "mode": "dry_run" if dry_run else "exec",
++                "notes": "b03 CLI skeleton payload. Real runner arrives in b04.",
++            }
++            artifact.parent.mkdir(parents=True, exist_ok=True)
++            artifact.write_text(json.dumps(payload, indent=2), encoding="utf-8")
++            log.info(f"Wrote {artifact}")
++            log.ok("Run skeleton OK")
++
++        log.ok("CLI run completed")
++    except HarnessError as e:
++        log.error(f"Harness error: {e!r}")
++        raise typer.Exit(code=1) from None
++    except Exception as e:  # pragma: no cover
++        log.error(f"Unhandled error: {e!r}")
++        raise typer.Exit(code=1) from e
++
++
++@app.command("gate")
++def gate_cmd(
++    summary: Path | None = typer.Option(
++        None, "--summary", "-r", help="Path to a JSON summary to check."
++    ),
++    config: Path | None = typer.Option(
++        None, "--config", "-c", help="Optional config to locate reports dir."
++    ),
++) -> None:
++    """Placeholder gate. Verifies the smoke artifact exists. Real thresholds land in b06."""
++    try:
++        cfg = load_config(str(config) if config else None)
++        preflight(str(config) if config else None)
++        candidate = summary or (Path(cfg.run.reports_dir) / "cli_run_smoke.json")
++
++        with log.section("Gate skeleton"):
++            if not candidate.exists():
++                log.warn(f"Summary not found, skipping gate: {candidate}")
++                log.ok("Gate skeleton OK")
++                raise typer.Exit(code=0)
++            data = json.loads(candidate.read_text(encoding="utf-8"))
++            _ = data.get("run_id")  # presence check only
++            log.info(f"Found summary {candidate.name}")
++            log.ok("Gate skeleton OK")
++    except HarnessError as e:
++        log.error(f"Harness error: {e!r}")
++        raise typer.Exit(code=1) from None
++    except Exception as e:  # pragma: no cover
++        log.error(f"Unhandled error: {e!r}")
++        raise typer.Exit(code=1) from e
++
++
++def main() -> None:
++    """Entry point for CLI."""
++    app()
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/docs/CLI.md b/docs/CLI.md
+new file mode 100644
+index 0000000..a8b2347
+--- /dev/null
++++ b/docs/CLI.md
+@@ -0,0 +1,139 @@
++# CLI Quick Usage
++
++## Running the CLI
++
++The AI Purple Ops CLI is invoked using Python's module execution syntax.
++
++### Help
++
++Display all available commands and options:
++
++```bash
++python -m cli.harness --help
++```
++
++### Version
++
++Display the current version:
++
++```bash
++python -m cli.harness version
++```
++
++### Run
++
++Execute a test suite (default: dry-run mode):
++
++```bash
++python -m cli.harness run --suite normal --dry-run
++```
++
++Run without dry-run:
++
++```bash
++python -m cli.harness run --suite normal --no-dry-run
++```
++
++### Gate
++
++Check gate status (verifies smoke artifact exists):
++
++```bash
++python -m cli.harness gate
++```
++
++Check specific summary file:
++
++```bash
++python -m cli.harness gate --summary path/to/summary.json
++```
++
++## Configuration Overrides
++
++Override configuration values at runtime:
++
++```bash
++python -m cli.harness run \
++  --config configs/harness.yaml \
++  --output-dir tmp/out \
++  --log-level DEBUG \
++  --seed 42
++```
++
++Available overrides:
++- `--config` / `-c`: Path to configuration file
++- `--output-dir`: Override `run.output_dir`
++- `--reports-dir`: Override `run.reports_dir`
++- `--transcripts-dir`: Override `run.transcripts_dir`
++- `--log-level`: Override `run.log_level`
++- `--seed`: Override `run.seed`
++
++## Command Details
++
++### run
++
++**Purpose**: Execute test suite and generate artifacts.
++
++**Options**:
++- `--suite` / `-s`: Suite name (default: normal)
++- `--config` / `-c`: Path to config file
++- `--dry-run` / `--no-dry-run`: Dry-run mode (default: enabled)
++- Configuration overrides (see above)
++
++**Output**: Creates `cli_run_smoke.json` in reports directory.
++
++### gate
++
++**Purpose**: Verify test results meet criteria.
++
++**Options**:
++- `--summary` / `-r`: Path to summary JSON
++- `--config` / `-c`: Path to config file
++
++**Note**: Full gating logic arrives in b06. Current implementation verifies artifact existence only.
++
++### version
++
++**Purpose**: Display version information.
++
++**Output**: Prints version from `harness.__version__`.
++
++## Examples
++
++Basic workflow:
++
++```bash
++# Check version
++python -m cli.harness version
++
++# Run smoke test
++python -m cli.harness run --suite normal --dry-run
++
++# Verify gate
++python -m cli.harness gate
++```
++
++Custom configuration:
++
++```bash
++# Run with custom config and overrides
++python -m cli.harness run \
++  --config configs/custom.yaml \
++  --output-dir /tmp/results \
++  --log-level DEBUG \
++  --seed 123 \
++  --dry-run
++```
++
++## Exit Codes
++
++- `0`: Success
++- `1`: Error (harness error or unhandled exception)
++
++## Notes
++
++- Commands use structured console output via `ConsoleLogger`
++- All commands run preflight checks before execution
++- Dry-run mode is enabled by default for safety
++- Real runner implementation arrives in b04
++- Full gating thresholds arrive in b06
+diff --git a/ruff.toml b/ruff.toml
+index 1e6ccb9..c351f4f 100644
+--- a/ruff.toml
++++ b/ruff.toml
+@@ -7,5 +7,6 @@ select = ["E","F","I","B","UP","S","N","ANN","ARG","C4","DTZ","PIE","PL","PT","R
+ ignore = ["ANN101","ANN102"]
+
+ [lint.per-file-ignores]
+-"tests/**.py" = ["S101","ANN201","ANN001","ANN002","ANN003"]
++"tests/**.py" = ["S101","ANN201","ANN001","ANN002","ANN003","S603","PLW1510"]
+ "src/harness/utils/logging.py" = ["S101"]
++"cli/**.py" = ["B008","PLR0913"]
+diff --git a/src/harness/core/README.md b/src/harness/core/README.md
+new file mode 100644
+index 0000000..0729edb
+--- /dev/null
++++ b/src/harness/core/README.md
+@@ -0,0 +1,135 @@
++# Core Interfaces
++
++This directory contains Protocol definitions for the 9 utility layers of the AI Purple Ops evaluation framework.
++
++## Architecture Overview
++
++The framework is organized into distinct layers, each with a specific purpose and analogy to traditional security tooling:
++
++| Layer                 | Purpose               | Analogy                     | Status      | Branch |
++| --------------------- | --------------------- | --------------------------- | ----------- | ------ |
++| **Adapters**          | Model I/O abstraction | Device driver               | Protocol ✓  | b04    |
++| **Probes**            | Active test payloads  | Unit test / exploit payload | Placeholder | b07    |
++| **Detectors**         | Output analysis       | IDS or static analyzer      | Placeholder | b05    |
++| **Evaluators**        | Scoring logic         | Assertions / metrics        | Placeholder | b05    |
++| **Orchestrators**     | Execution logic       | CI/CD controller            | Protocol ✓  | b04    |
++| **Metrics & Logging** | Observability         | SIEM / telemetry backend    | Protocol ✓  | b04    |
++| **Policy Layer**      | Rule definitions      | Policy-as-code              | Placeholder | b05    |
++| **Mutators/Fuzzers**  | Input diversification | Fuzzer engine               | Placeholder | b07    |
++| **Exploit Builders**  | Chain vulnerabilities | Post-exploitation toolkit   | Placeholder | b08    |
++
++## Current State (b03)
++
++### ✅ Protocols Defined
++The following interfaces are ready for b04 implementation:
++
++- **`Adapter`** (adapters.py) - Model I/O abstraction
++- **`Runner`** (runners.py) - Test execution orchestration
++- **`Reporter`** (reporters.py) - Result serialization and logging
++- **`TestCase`** (models.py) - Test case data model
++- **`RunResult`** (models.py) - Test result data model
++
++### 🚧 Placeholders
++The following files exist with TODO roadmaps for future branches:
++
++- **`detectors.py`** - Output analysis protocols (b05)
++- **`evaluators.py`** - Scoring and metrics protocols (b05)
++- **`probes.py`** - Test payload generation protocols (b07)
++- **`mutators.py`** - Input fuzzing protocols (b07)
++- **`exploits.py`** - Attack chain protocols (b08)
++
++## Usage
++
++### Importing Core Interfaces
++
++```python
++from harness.core import Adapter, Runner, Reporter, TestCase, RunResult
++```
++
++### Example: Implementing an Adapter
++
++```python
++from typing import Any
++from harness.core import Adapter
++
++class MockAdapter:
++    """Mock adapter for deterministic testing."""
++
++    def invoke(self, prompt: str, **kwargs: Any) -> str:
++        return f"Mock response to: {prompt}"
++```
++
++### Example: Implementing a Runner
++
++```python
++from harness.core import Runner, TestCase, RunResult, Adapter
++
++class MockRunner:
++    """Mock runner that executes test cases."""
++
++    def __init__(self, adapter: Adapter) -> None:
++        self.adapter = adapter
++
++    def execute(self, test_case: TestCase) -> RunResult:
++        response = self.adapter.invoke(test_case.prompt)
++        return RunResult(
++            test_id=test_case.id,
++            response=response,
++            passed=True,
++            metadata=test_case.metadata,
++        )
++```
++
++## Design Principles
++
++1. **Protocol-First**: All layers use Python `Protocol` for structural typing
++2. **Minimal Signatures**: Interfaces define only what's needed, expand later
++3. **TODO-Driven**: Each protocol includes TODO comments linking to branches
++4. **Branch-Aligned**: Implementation matches the 10-phase roadmap (b01-b10)
++5. **Type-Safe**: Full type hints with mypy strict mode compliance
++
++## Roadmap
++
++### Phase b04 (Mock Runner)
++- Implement `MockAdapter` for deterministic testing
++- Implement `MockRunner` for test execution
++- Implement `JSONReporter` and `JUnitReporter`
++- Create sample `TestCase` fixtures in `suites/normal/`
++
++### Phase b05 (Oracles and Policies)
++- Define `Detector` protocol
++- Implement `HarmfulContentDetector`
++- Define `Evaluator` protocol
++- Implement `ThresholdEvaluator` for SLO checks
++- Expand `TestCase` with `expected_policy` field
++- Expand `RunResult` with `policy_violations` field
++
++### Phase b06 (Gates and Evidence)
++- Expand `Runner` with gate threshold checks
++- Expand `RunResult` with `evidence_links` field
++- Implement evidence pack generation
++
++### Phase b07 (Adversarial Suites)
++- Define `Probe` protocol
++- Implement prompt injection, RAG, and UI probes
++- Define `Mutator` protocol
++- Integrate Hypothesis for property-based fuzzing
++- Expand `TestCase` with `attack_type` field
++
++### Phase b08 (Tool Simulation)
++- Define `ExploitBuilder` protocol
++- Implement tool chain exploits
++- Implement RAG security features
++- Add streaming support to `Adapter`
++- Add tool call support to `Adapter`
++
++### Phase b09 (CI/CD Integration)
++- Expand `Reporter` with CI/CD status checks
++- Implement GitHub Actions integration
++
++## See Also
++
++- [docs/ROADMAP.md](../../../docs/ROADMAP.md) - 10-phase development plan
++- [docs/BRANCHES.md](../../../docs/BRANCHES.md) - Branch acceptance criteria
++- [docs/architecture/pipeline.md](../../../docs/architecture/pipeline.md) - End-to-end evaluation lifecycle
++- [registry/INTEGRATION_STATUS.md](../../../registry/INTEGRATION_STATUS.md) - Tool adapter roadmap
+diff --git a/src/harness/core/__init__.py b/src/harness/core/__init__.py
+new file mode 100644
+index 0000000..9f774bd
+--- /dev/null
++++ b/src/harness/core/__init__.py
+@@ -0,0 +1,17 @@
++"""Core interfaces for AI Purple Ops evaluation framework."""
++
++from __future__ import annotations
++
++from .adapters import Adapter
++from .models import RunResult, TestCase
++from .reporters import Reporter
++from .runners import Runner
++
++__all__ = ["Adapter", "Reporter", "RunResult", "Runner", "TestCase"]
++
++# Future exports (uncomment when implemented):
++# from .detectors import Detector
++# from .evaluators import Evaluator
++# from .probes import Probe
++# from .mutators import Mutator
++# from .exploits import ExploitBuilder
+diff --git a/src/harness/core/adapters.py b/src/harness/core/adapters.py
+new file mode 100644
+index 0000000..120d687
+--- /dev/null
++++ b/src/harness/core/adapters.py
+@@ -0,0 +1,16 @@
++"""Adapter protocol for model I/O abstraction."""
++
++from __future__ import annotations
++
++from typing import Any, Protocol
++
++
++class Adapter(Protocol):
++    """Model I/O abstraction (device driver analogy)."""
++
++    def invoke(self, prompt: str, **kwargs: Any) -> str:  # noqa: ANN401
++        """Invoke the model with a prompt and return response."""
++        ...
++
++    # TODO(b05): Add streaming support
++    # TODO(b07): Add tool call support for agent testing
+diff --git a/src/harness/core/detectors.py b/src/harness/core/detectors.py
+new file mode 100644
+index 0000000..2ef938c
+--- /dev/null
++++ b/src/harness/core/detectors.py
+@@ -0,0 +1,8 @@
++"""Detector protocols for output analysis."""
++
++from __future__ import annotations
++
++# TODO(b05): Detector Protocol for output analysis (IDS analogy)
++# - HarmfulContentDetector
++# - PIILeakageDetector
++# - PolicyViolationDetector
+diff --git a/src/harness/core/evaluators.py b/src/harness/core/evaluators.py
+new file mode 100644
+index 0000000..5532079
+--- /dev/null
++++ b/src/harness/core/evaluators.py
+@@ -0,0 +1,7 @@
++"""Evaluator protocols for scoring logic."""
++
++from __future__ import annotations
++
++# TODO(b05): Evaluator Protocol for scoring (assertions/metrics analogy)
++# - ThresholdEvaluator (SLO checks)
++# - FairnessEvaluator (bias metrics)
+diff --git a/src/harness/core/exploits.py b/src/harness/core/exploits.py
+new file mode 100644
+index 0000000..9737367
+--- /dev/null
++++ b/src/harness/core/exploits.py
+@@ -0,0 +1,7 @@
++"""Exploit builder protocols for vulnerability chains."""
++
++from __future__ import annotations
++
++# TODO(b08): ExploitBuilder Protocol for chaining vulnerabilities (post-exploitation analogy)
++# - ToolChainExploit (privilege escalation chains)
++# - DataExfiltrationExploit (RAG leakage chains)
+diff --git a/src/harness/core/models.py b/src/harness/core/models.py
+new file mode 100644
+index 0000000..cd4d714
+--- /dev/null
++++ b/src/harness/core/models.py
+@@ -0,0 +1,29 @@
++"""Core data models for test cases and results."""
++
++from __future__ import annotations
++
++from dataclasses import dataclass
++from typing import Any
++
++
++@dataclass
++class TestCase:
++    """Single test case definition."""
++
++    id: str
++    prompt: str
++    metadata: dict[str, Any]
++    # TODO(b05): Add expected_policy field
++    # TODO(b07): Add attack_type field for redteam
++
++
++@dataclass
++class RunResult:
++    """Single test execution result."""
++
++    test_id: str
++    response: str
++    passed: bool
++    metadata: dict[str, Any]
++    # TODO(b05): Add policy_violations field
++    # TODO(b06): Add evidence_links field
+diff --git a/src/harness/core/mutators.py b/src/harness/core/mutators.py
+new file mode 100644
+index 0000000..e075fc7
+--- /dev/null
++++ b/src/harness/core/mutators.py
+@@ -0,0 +1,7 @@
++"""Mutator protocols for input diversification."""
++
++from __future__ import annotations
++
++# TODO(b07): Mutator Protocol for input diversification (fuzzer engine analogy)
++# - HypothesisMutator (property-based fuzzing)
++# - TokenSubstitutionMutator
+diff --git a/src/harness/core/probes.py b/src/harness/core/probes.py
+new file mode 100644
+index 0000000..ac8d6b5
+--- /dev/null
++++ b/src/harness/core/probes.py
+@@ -0,0 +1,8 @@
++"""Probe protocols for test payload generation."""
++
++from __future__ import annotations
++
++# TODO(b07): Probe Protocol for test payload generation (exploit payload analogy)
++# - PromptInjectionProbe
++# - RAGPoisoningProbe
++# - UIInjectionProbe (XSS, SSRF)
+diff --git a/src/harness/core/reporters.py b/src/harness/core/reporters.py
+new file mode 100644
+index 0000000..7037934
+--- /dev/null
++++ b/src/harness/core/reporters.py
+@@ -0,0 +1,19 @@
++"""Reporter protocol for metrics and logging."""
++
++from __future__ import annotations
++
++from typing import Protocol
++
++from .models import RunResult
++
++
++class Reporter(Protocol):
++    """Metrics and logging (telemetry backend analogy)."""
++
++    def write_summary(self, results: list[RunResult], path: str) -> None:
++        """Write test results to a summary file."""
++        ...
++
++    # TODO(b04): JSON reporter implementation
++    # TODO(b04): JUnit XML reporter implementation
++    # TODO(b09): Add CI/CD status check integration
+diff --git a/src/harness/core/runners.py b/src/harness/core/runners.py
+new file mode 100644
+index 0000000..402dbdb
+--- /dev/null
++++ b/src/harness/core/runners.py
+@@ -0,0 +1,18 @@
++"""Runner protocol for test execution logic."""
++
++from __future__ import annotations
++
++from typing import Protocol
++
++from .models import RunResult, TestCase
++
++
++class Runner(Protocol):
++    """Execution logic (CI/CD controller analogy)."""
++
++    def execute(self, test_case: TestCase) -> RunResult:
++        """Execute a single test case and return result."""
++        ...
++
++    # TODO(b05): Add policy oracle integration
++    # TODO(b06): Add gate threshold checks
+diff --git a/src/harness/utils/preflight.py b/src/harness/utils/preflight.py
+index f1850aa..aa74634 100644
+--- a/src/harness/utils/preflight.py
++++ b/src/harness/utils/preflight.py
+@@ -7,10 +7,10 @@ from .errors import PreflightError
+ from .logging import log
+
+
+-def preflight() -> None:
++def preflight(yaml_path: str | None = None) -> None:
+     """Basic self-healing checks to make dev UX smooth."""
+     with log.section("Preflight"):
+-        cfg = load_config()
++        cfg = load_config(yaml_path)
+         # Sanity for dirs is already ensured in load_config; re-affirm with logs.
+         for p in [cfg.run.output_dir, cfg.run.reports_dir, cfg.run.transcripts_dir]:
+             if not Path(p).exists():
+diff --git a/tests/integration/test_cli_help.py b/tests/integration/test_cli_help.py
+new file mode 100644
+index 0000000..2e1a18e
+--- /dev/null
++++ b/tests/integration/test_cli_help.py
+@@ -0,0 +1,17 @@
++"""Test CLI help command."""
++
++from __future__ import annotations
++
++import subprocess
++import sys
++
++
++def test_cli_help_works() -> None:
++    """Verify CLI help shows all commands."""
++    proc = subprocess.run(
++        [sys.executable, "-m", "cli.harness", "--help"], capture_output=True, text=True
++    )
++    assert proc.returncode == 0
++    out = proc.stdout
++    for kw in ("run", "gate", "version"):
++        assert kw in out
+diff --git a/tests/integration/test_cli_run_smoke.py b/tests/integration/test_cli_run_smoke.py
+new file mode 100644
+index 0000000..1fda36f
+--- /dev/null
++++ b/tests/integration/test_cli_run_smoke.py
+@@ -0,0 +1,54 @@
++"""Test CLI run command smoke test."""
++
++from __future__ import annotations
++
++import json
++import os
++import subprocess
++import sys
++from pathlib import Path
++
++
++def test_cli_run_smoke(tmp_path, monkeypatch) -> None:  # type: ignore[no-untyped-def]
++    """Verify CLI run creates smoke artifact with correct structure."""
++    # Get repo root before changing directory
++    repo_root = Path(__file__).parent.parent.parent.absolute()
++
++    cfg = tmp_path / "harness.yaml"
++    cfg.write_text(
++        "run:\n"
++        "  output_dir: outx\n"
++        "  reports_dir: outx/reports\n"
++        "  transcripts_dir: outx/transcripts\n"
++        "  log_level: INFO\n"
++        "  seed: 7\n",
++        encoding="utf-8",
++    )
++    monkeypatch.chdir(tmp_path)
++
++    # Add repo root to PYTHONPATH so subprocess can find cli module
++    env = os.environ.copy()
++    env["PYTHONPATH"] = str(repo_root)
++
++    proc = subprocess.run(
++        [
++            sys.executable,
++            "-m",
++            "cli.harness",
++            "run",
++            "--suite",
++            "normal",
++            "--config",
++            str(cfg),
++            "--dry-run",
++        ],
++        capture_output=True,
++        text=True,
++        env=env,
++    )
++    assert proc.returncode == 0
++    out_file = Path("outx/reports/cli_run_smoke.json")
++    assert out_file.exists()
++    data = json.loads(out_file.read_text(encoding="utf-8"))
++    assert data.get("suite") == "normal"
++    assert "run_id" in data
+diff --git a/tests/integration/test_cli_version.py b/tests/integration/test_cli_version.py
+new file mode 100644
+index 0000000..e3e4d9f
+--- /dev/null
++++ b/tests/integration/test_cli_version.py
+@@ -0,0 +1,17 @@
++"""Test CLI version command."""
++
++from __future__ import annotations
++
++import subprocess
++import sys
++
++from harness import __version__
++
++
++def test_cli_version() -> None:
++    """Verify CLI version outputs correct version."""
++    proc = subprocess.run(
++        [sys.executable, "-m", "cli.harness", "version"], capture_output=True, text=True
++    )
++    assert proc.returncode == 0
++    assert __version__ in proc.stdout
+diff --git a/tests/unit/test_core_imports.py b/tests/unit/test_core_imports.py
+new file mode 100644
+index 0000000..5ff6f57
+--- /dev/null
++++ b/tests/unit/test_core_imports.py
+@@ -0,0 +1,10 @@
++"""Smoke test for core interface imports."""
++
++from __future__ import annotations
++
++
++def test_core_imports() -> None:
++    """Verify all core interfaces are importable."""
++    from harness.core import Adapter, Reporter, Runner, RunResult, TestCase
++
++    assert all([Adapter, Reporter, RunResult, Runner, TestCase])
