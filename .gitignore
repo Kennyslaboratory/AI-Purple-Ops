@@ -18,11 +18,6 @@ pip-delete-this-directory.txt
 *~
 .DS_Store
 
-# GitHub and platform-specific files
-.github/
-CODEOWNERS
-SECURITY_CONTACTS.md
-
 # Environment
 .env
 .env.local

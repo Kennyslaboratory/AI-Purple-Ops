@@ -1,0 +1,14 @@
+.venv/
+node_modules/
+dist/
+build/
+out/
+coverage/
+__pycache__/
+*.pyc
+*.log
+.DS_Store
+.env
+.env.*
+data/ground_truth/*
+data/fixtures/*
