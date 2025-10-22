@@ -60,4 +60,10 @@ smoke: ## Self-healing preflight + style demo
 clean: ## Remove caches and build artifacts
 	rm -rf .pytest_cache .mypy_cache dist build *.egg-info
 
+api.up: ## Start FastAPI stub server on port 8080
+	python -m uvicorn api.stub_server:app --reload --port 8080
+
+evidence.test: ## Create and verify sample evidence pack
+	python scripts/evidence_roundtrip.py
+
 ci: lint type sec test ## Run core checks (audit not included, see help)
