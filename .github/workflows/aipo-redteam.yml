@@ -1,0 +1,37 @@
+name: AI Purple Ops Redteam
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  redteam:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -e .
+          pip install -e ".[redteam]"
+
+      - name: Run redteam tests
+        run: |
+          python -m cli.harness recipe run security/full_redteam --adapter mock
+        continue-on-error: true
+
+      - name: Quality gate check
+        run: |
+          python -m cli.harness gate
+
+      - name: Upload evidence pack
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: redteam-evidence
+          path: out/evidence/*.zip

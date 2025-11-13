@@ -1,0 +1,72 @@
+openapi: 3.0.3
+info:
+  title: AI Security Harness API
+  version: 0.0.1
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        "200": { description: OK }
+  /benchmarks:
+    get:
+      summary: List available benchmark descriptors
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string }
+                        lane: { type: string, enum: ["safety","security","compliance"] }
+                        source: { type: string }
+                        metrics: { type: array, items: { type: string } }
+  /runs:
+    post:
+      summary: Start a run
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: ["suite"]
+              properties:
+                suite: { type: string }
+                profile: { type: string, enum: ["nist_ai_rmf","eu_ai_act","fedramp"], nullable: true }
+      responses:
+        "202":
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  run_id: { type: string }
+  /runs/{run_id}:
+    get:
+      summary: Get run summary
+      parameters:
+        - in: path
+          name: run_id
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+  /evidence/{run_id}.zip:
+    get:
+      summary: Download evidence pack
+      parameters:
+        - in: path
+          name: run_id
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }

@@ -1,0 +1,16 @@
+articles:
+  9_risk_management:
+    run: ["baseline","battery"]
+    evidence: ["reports/schemas/run_summary.schema.json","reports/schemas/evidence_manifest.schema.json"]
+  10_data_governance:
+    controls: ["ACL at retrieval","redaction at retrieval"]
+    tests: ["rag:leakage","rag:poisoning"]
+  11_technical_documentation:
+    template: "reports/templates/eu_annex_iv_checklist.md"
+  13_transparency:
+    logs: ["out/reports/","out/transcripts/"]
+  14_human_oversight:
+    notes: "Human approvals for high-blast actions"
+  15_accuracy_robustness_cybersecurity:
+    suites: ["normal","redteam","ui"]
+    metrics: ["accuracy_proxy","harmful_output_rate","egress_block_rate"]

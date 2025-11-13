@@ -1,0 +1,16 @@
+# Map NIST AI RMF functions to harness tests and artifacts
+functions:
+  GOVERN:
+    artifacts: ["docs/GOVERNANCE.md"]
+  MAP:
+    artifacts: ["docs/COMPLIANCE_OVERVIEW.md","mappings/nist_ai_rmf.yaml"]
+  MEASURE:
+    suites: ["normal","redteam","rag","ui"]
+    metrics: [harmful_output_rate, tool_policy_violation_rate, utility_failure_rate, latency_ms, cost_usd]
+    reports: ["reports/schemas/run_summary.schema.json"]
+  MANAGE:
+    runbooks: ["docs/runbooks/release_checklist.md","docs/runbooks/rollback.md"]
+controls:
+  bias_fairness: { tests: [], notes: "Add fairness tools in later branches" }
+  privacy_leakage: { tests: ["rag:leakage"] }
+  robustness: { tests: ["redteam:prompt_injection","redteam:tool_injection"] }

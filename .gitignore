@@ -1,0 +1,105 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# IDE and Editor artifacts
+.vscode/
+.idea/
+.cursor/
+.cursorignore
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# Output and build artifacts
+out/
+dist/
+build/
+coverage/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+custom_out/
+env_out/
+reports/
+evidence/
+
+# Dependencies
+node_modules/
+
+# Data directories (prevent accidental commits, keep structure)
+data/ground_truth/**
+!data/ground_truth/README.md
+!data/ground_truth/.gitkeep
+data/fixtures/**
+!data/fixtures/README.md
+!data/fixtures/.gitkeep
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+
+# Model files - NEVER commit these
+*.gguf
+*.bin
+*.safetensors
+*.ckpt
+*.pth
+*.pt
+models/
+weights/
+checkpoints/
+user_models/
+
+# Keep model cache out of repo (these are typically in ~/.cache anyway)
+.cache/
+
+# Private planning documents (not for public repo)
+# BRANCH_PLAN.txt is now public (master roadmap)
+PROJECT_NOTES.txt
+TODO_PRIVATE.txt
+BRANCH_PLAN*
+*_ASSESSMENT.md
+*_AUDIT.md
+*_FIXES*.md
+*_TEST*.md
+*_SUMMARY.md
+huggingface/
+transformers/
+
+# API Keys and secrets (CRITICAL - never commit these)
+*.key
+*.pem
+*.env
+.env.*
+secrets/
+credentials/
+api_keys/
+
+# Test output with potential secrets
+test_output/
+test_results/
+*.db
+*.duckdb
+cache_*.db

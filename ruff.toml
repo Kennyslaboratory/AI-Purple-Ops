@@ -1,0 +1,12 @@
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[lint]
+select = ["E","F","I","B","UP","S","N","ANN","ARG","C4","DTZ","PIE","PL","PT","RUF"]
+ignore = ["ANN101","ANN102"]
+
+[lint.per-file-ignores]
+"tests/**.py" = ["S101","ANN201","ANN001","ANN002","ANN003","S603","PLW1510","PLC0415"]
+"src/harness/utils/logging.py" = ["S101"]
+"cli/**.py" = ["B008","PLR0913"]
