@@ -2665,11 +2665,15 @@ def _suites_info(suite_name: str) -> None:
 
 @app.command("adapter")
 def adapter_cmd(
-    action: str = typer.Argument("list", help="Action: init, list, test, validate, clean"),
-    name: str | None = typer.Option(None, "--name", "-n", help="Adapter name (for init/test)"),
+    action: str = typer.Argument("list", help="Action: init, list, test, validate, clean, quick"),
+    name: str | None = typer.Option(None, "--name", "-n", help="Adapter name (for init/test/quick)"),
     template: str | None = typer.Option(None, "--template", "-t", help="Template type (for init)"),
+    from_curl: str | None = typer.Option(None, "--from-curl", help="cURL command (for quick)"),
+    from_http: Path | None = typer.Option(None, "--from-http", help="HTTP request file from Burp (for quick)"),
+    from_clipboard: bool = typer.Option(False, "--from-clipboard", help="Parse from clipboard (for quick)"),
+    prompt: str | None = typer.Option(None, "--prompt", help="Test prompt (for test action)"),
 ) -> None:
-    """Manage adapters: create, list, test, validate."""
+    """Manage adapters: create, list, test, validate, quick (pentester workflow)."""
     try:
         if action == "init":
             _adapter_init(name, template)
@@ -2680,7 +2684,7 @@ def adapter_cmd(
                 print_error("Adapter name required for 'test' action")
                 print_info("Usage: aipop adapter test --name <adapter_name>")
                 raise typer.Exit(code=1)
-            _adapter_test(name)
+            _adapter_test(name, prompt)
         elif action == "validate":
             if not name:
                 print_error("Adapter name required for 'validate' action")
@@ -2689,9 +2693,15 @@ def adapter_cmd(
             _adapter_validate(name)
         elif action == "clean":
             _adapter_clean()
+        elif action == "quick":
+            if not name:
+                print_error("Adapter name required for 'quick' action")
+                print_info("Usage: aipop adapter quick --name target_app --from-curl '...'")
+                raise typer.Exit(code=1)
+            _adapter_quick(name, from_curl, from_http, from_clipboard)
         else:
             print_error(f"Unknown action: {action}")
-            print_info("Available actions: init, list, test, validate, clean")
+            print_info("Available actions: init, list, test, validate, clean, quick")
             raise typer.Exit(code=1)
     except Exception as e:
         print_error(f"Adapter command failed: {e!s}")
@@ -2765,32 +2775,81 @@ def _adapter_list() -> None:
     console.print(f"\n[dim]Total: {len(adapters)} adapter(s)[/]")
 
 
-def _adapter_test(name: str) -> None:
-    """Test adapter connection."""
-    print_info(f"Testing adapter: {name}")
-
-    try:
-        adapter = AdapterRegistry.get(name, config={})
-        print_info("Adapter loaded successfully")
-
-        # Try a simple invoke
-        print_info("Testing invoke() with test prompt...")
-        response = adapter.invoke("Hello, world!")
-        print_success("✅ Adapter test successful!")
-        print_info(f"Response: {response.text[:100]}...")
-
-        # Show key metrics instead of full metadata dump
-        if response.meta:
-            meta = response.meta
-            print_info(f"Response time: {meta.get('latency_ms', 'N/A')}ms")
-            print_info(f"Tokens: {meta.get('tokens', 'N/A')}")
-            print_info(f"Model: {meta.get('model', 'N/A')}")
-            if "cost_usd" in meta:
-                print_info(f"Cost: ${meta.get('cost_usd', 0):.6f}")
-
-    except Exception as e:
-        print_error(f"❌ Adapter test failed: {e}")
-        raise typer.Exit(code=1) from e
+def _adapter_test(name: str, prompt: str | None = None) -> None:
+    """Test adapter connection with Rich error handling."""
+    from harness.adapters.error_handlers import show_test_success
+    from harness.adapters.registry import load_adapter_from_yaml
+    
+    test_prompt = prompt or "Hello, world!"
+    config_path = Path(f"adapters/{name}.yaml")
+    
+    # Check if it's a YAML adapter
+    if config_path.exists():
+        print_info(f"Testing YAML adapter: {name}")
+        print_info(f"Config: {config_path}")
+        
+        try:
+            adapter = load_adapter_from_yaml(config_path)
+            print_info("Adapter loaded successfully")
+            
+            # Try invoke
+            print_info(f"Testing with prompt: {test_prompt}")
+            response = adapter.invoke(test_prompt)
+            
+            # Show success with Rich panel
+            show_test_success(
+                adapter_name=name,
+                prompt=test_prompt,
+                response_text=response.text,
+                latency_ms=response.meta.get("latency_ms", 0),
+            )
+            
+        except requests.ConnectionError as e:
+            from harness.adapters.error_handlers import handle_connection_error
+            handle_connection_error(str(config_path), e)
+            raise typer.Exit(code=1) from None
+        except requests.HTTPError as e:
+            from harness.adapters.error_handlers import (
+                handle_auth_error,
+                handle_bad_request,
+                handle_rate_limit,
+                handle_server_error,
+            )
+            if e.response.status_code in [401, 403]:
+                import yaml
+                config = yaml.safe_load(config_path.read_text())
+                auth_type = config.get("auth", {}).get("type", "none")
+                handle_auth_error(e.response.status_code, auth_type, str(config_path))
+            elif e.response.status_code == 429:
+                retry_after = e.response.headers.get("Retry-After")
+                handle_rate_limit(e.response, int(retry_after) if retry_after else None)
+            elif 500 <= e.response.status_code < 600:
+                handle_server_error(e.response.status_code, e.response.text)
+            else:
+                handle_bad_request(e.response.status_code, e.response.text, str(config_path))
+            raise typer.Exit(code=1) from None
+        except Exception as e:
+            print_error(f"❌ Test failed: {e}")
+            raise typer.Exit(code=1) from e
+    else:
+        # Traditional adapter (Python class)
+        print_info(f"Testing adapter: {name}")
+        try:
+            adapter = AdapterRegistry.get(name, config={})
+            print_info("Adapter loaded successfully")
+            
+            print_info(f"Testing with prompt: {test_prompt}")
+            response = adapter.invoke(test_prompt)
+            
+            show_test_success(
+                adapter_name=name,
+                prompt=test_prompt,
+                response_text=response.text,
+                latency_ms=response.meta.get("latency_ms", 0),
+            )
+        except Exception as e:
+            print_error(f"❌ Adapter test failed: {e}")
+            raise typer.Exit(code=1) from e
 
 
 def _adapter_validate(name: str) -> None:
@@ -2844,6 +2903,132 @@ def _adapter_clean() -> None:
     print_info("\n💡 To clean models manually:")
     print_info("  HuggingFace: rm -rf ~/.cache/huggingface/*")
     print_info("  Ollama: ollama prune")
+
+
+def _adapter_quick(
+    name: str,
+    from_curl: str | None,
+    from_http: Path | None,
+    from_clipboard: bool,
+) -> None:
+    """Quick adapter generation from Burp/cURL (pentester workflow)."""
+    from harness.adapters.error_handlers import show_config_location
+    from harness.adapters.quick_adapter import (
+        generate_adapter_config,
+        list_json_fields,
+        parse_curl,
+        parse_http_request,
+        save_adapter_config,
+    )
+    from harness.utils.security_check import check_config_for_secrets, show_security_warning
+    from rich.console import Console
+    from rich.panel import Panel
+    from rich.prompt import Confirm, Prompt
+    
+    console = Console()
+    
+    # Parse input source
+    parsed_data = None
+    
+    if from_curl:
+        console.print("[*] Parsing cURL command...")
+        parsed_data = parse_curl(from_curl)
+    elif from_http:
+        if not from_http.exists():
+            print_error(f"HTTP request file not found: {from_http}")
+            raise typer.Exit(code=1)
+        console.print(f"[*] Parsing HTTP request from: {from_http}")
+        http_text = from_http.read_text(encoding="utf-8")
+        parsed_data = parse_http_request(http_text)
+    elif from_clipboard:
+        try:
+            import pyperclip
+            clipboard_text = pyperclip.paste()
+            console.print("[*] Parsing from clipboard...")
+            # Try as cURL first, fall back to HTTP
+            if "curl" in clipboard_text.lower():
+                parsed_data = parse_curl(clipboard_text)
+            else:
+                parsed_data = parse_http_request(clipboard_text)
+        except ImportError:
+            print_error("pyperclip not installed. Install with: pip install pyperclip")
+            raise typer.Exit(code=1) from None
+        except Exception as e:
+            print_error(f"Failed to parse clipboard: {e}")
+            raise typer.Exit(code=1) from e
+    else:
+        print_error("Must specify --from-curl, --from-http, or --from-clipboard")
+        print_info("Example: aipop adapter quick --name target_app --from-curl '...'")
+        raise typer.Exit(code=1)
+    
+    if not parsed_data:
+        print_error("Failed to parse input")
+        raise typer.Exit(code=1)
+    
+    # Show auto-detection results
+    console.print()
+    console.print(Panel.fit(
+        f"[bold]Auto-Detection Results:[/bold]\n\n"
+        f"✓ URL: {parsed_data.get('url', 'NOT FOUND')}\n"
+        f"✓ Method: {parsed_data.get('method', 'NOT FOUND')}\n"
+        f"✓ Auth Type: {parsed_data.get('auth_type', 'none')}\n"
+        f"✓ Headers: {len(parsed_data.get('headers', {}))} detected\n"
+        f"✓ Prompt Field: {parsed_data.get('prompt_field') or 'NOT DETECTED'}",
+        border_style="cyan",
+        title="[bold]Detection Results[/bold]"
+    ))
+    
+    # Interactive prompts for missing fields
+    if not parsed_data.get("prompt_field"):
+        console.print("\n[yellow]⚠️  Could not auto-detect prompt field[/yellow]")
+        body = parsed_data.get("body", {})
+        if body and isinstance(body, dict):
+            fields = list_json_fields(body)
+            console.print(f"\n[dim]Available fields in request body:[/dim]")
+            for field in fields[:10]:  # Show first 10
+                console.print(f"  • {field}")
+            if len(fields) > 10:
+                console.print(f"  ... and {len(fields) - 10} more")
+        
+        prompt_field = Prompt.ask("\nEnter prompt field name", default="message")
+        parsed_data["prompt_field"] = prompt_field
+    
+    # Ask about auth token if detected
+    if parsed_data.get("auth_type") != "none":
+        headers = parsed_data.get("headers", {})
+        auth_header = headers.get("Authorization", "")
+        if auth_header and "Bearer" in auth_header:
+            console.print("\n[yellow]⚠️  Bearer token detected in request[/yellow]")
+            use_env = Confirm.ask("Move token to environment variable?", default=True)
+            if not use_env:
+                console.print("[yellow]Warning: Keeping token in config (not recommended)[/yellow]")
+    
+    # Generate YAML config
+    config = generate_adapter_config(parsed_data, name)
+    
+    # Save config
+    output_path = Path(f"adapters/{name}.yaml")
+    save_adapter_config(config, output_path)
+    
+    print_success(f"✓ Config generated: {output_path}")
+    
+    # Security check
+    warnings = check_config_for_secrets(output_path)
+    if warnings:
+        show_security_warning(output_path, warnings)
+    
+    # Show next steps
+    show_config_location(str(output_path), name)
+    
+    # Auto-test if requested
+    if Confirm.ask("\nTest adapter now?", default=True):
+        console.print()
+        try:
+            _adapter_test(name, "Hello, world!")
+        except typer.Exit:
+            console.print("\n[yellow]Test failed. Edit config and try again:[/yellow]")
+            console.print(f"  1. Edit: {output_path}")
+            console.print(f"  2. Test: aipop adapter test --name {name}")
 
 
 @app.command("tools")

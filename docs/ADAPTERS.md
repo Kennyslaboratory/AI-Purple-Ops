@@ -2,6 +2,25 @@
 
 Adapters connect AI Purple Ops to any AI model - commercial APIs, local models, or custom endpoints.
 
+## 🚀 For Pentesters: Quick Adapter Generation
+
+**Generate adapters from Burp/cURL in 2-3 minutes** without writing Python code.
+
+👉 **See [QUICK_ADAPTER.md](QUICK_ADAPTER.md) for the pentester-optimized workflow**
+
+```bash
+# From Burp: Right-click → Copy as cURL
+aipop adapter quick --name target_app --from-curl "curl 'https://api.target.com/chat' ..."
+
+# Test it
+aipop adapter test --name target_app
+
+# Use it
+aipop run --suite adversarial --adapter target_app
+```
+
+---
+
 ## Quick Start
 
 ### Use Built-in Adapters

@@ -103,3 +103,9 @@ test_results/
 *.db
 *.duckdb
 cache_*.db
+
+# User-generated adapter configs (may contain secrets)
+adapters/*.yaml
+adapters/*.yml
+!adapters/templates/
+!adapters/templates/*.yaml

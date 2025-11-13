@@ -142,3 +142,44 @@ class AdapterRegistry:
             List of adapter names
         """
         return list(cls._adapters.keys())
+
+
+def load_adapter_from_yaml(config_path: str | Any) -> Adapter:
+    """Load adapter from YAML config file.
+    
+    Enables quick adapter creation from Burp/cURL without writing Python code.
+    
+    Args:
+        config_path: Path to YAML config file (str or Path object)
+        
+    Returns:
+        CustomHTTPAdapter instance configured from YAML
+        
+    Raises:
+        AdapterRegistryError: If config file doesn't exist or is invalid
+        
+    Example:
+        >>> adapter = load_adapter_from_yaml("adapters/target_app.yaml")
+        >>> response = adapter.invoke("Hello, world!")
+    """
+    from pathlib import Path
+    
+    import yaml
+    
+    from harness.adapters.custom_http import CustomHTTPAdapter
+    
+    path = Path(config_path)
+    
+    if not path.exists():
+        raise AdapterRegistryError(f"Adapter config not found: {config_path}")
+    
+    try:
+        with path.open(encoding="utf-8") as f:
+            config = yaml.safe_load(f)
+    except yaml.YAMLError as e:
+        raise AdapterRegistryError(f"Invalid YAML in {config_path}: {e}") from e
+    
+    if not config or not isinstance(config, dict):
+        raise AdapterRegistryError(f"Invalid config format in {config_path}")
+    
+    return CustomHTTPAdapter(config)
