@@ -29,7 +29,7 @@ from harness.output.ctf_display import (
 )
 from harness.utils.log_utils import log
 
-app = typer.Typer(help="⚠️  CTF MODE (BETA) - Objective-based attack workflows")
+app = typer.Typer(help="CTF mode - Objective-based attack workflows (Beta)")
 console = Console()
 
 

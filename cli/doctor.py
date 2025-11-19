@@ -48,7 +48,7 @@ def check(
         aipop doctor check --adapter openai   # Check OpenAI only
         aipop doctor check --verbose          # Show detailed info
     """
-    console.print("\n[bold]🔍 AI Purple Ops Doctor - Configuration Check[/bold]\n")
+    console.print("\n[bold]AI Purple Ops Doctor - Configuration Check[/bold]\n")
     
     # Check environment first
     console.print("[bold]Environment:[/bold]")
