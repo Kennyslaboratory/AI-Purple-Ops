@@ -21,6 +21,7 @@ class MockAdapter:
         response_mode: Response behavior - "echo", "refuse", "random", or "smart"
         simulate_latency: Whether to add realistic latency delays
         simulate_tool_calls: Whether to simulate tool/function calls in responses
+        model: Model name (optional, defaults to "mock-model-v1")
     """
 
     def __init__(
@@ -29,12 +30,14 @@ class MockAdapter:
         response_mode: str = "echo",
         simulate_latency: bool = False,
         simulate_tool_calls: bool = False,
+        model: str | None = None,
     ) -> None:
         """Initialize mock adapter with configuration."""
         self.seed = seed
         self.response_mode = response_mode
         self.simulate_latency = simulate_latency
         self.simulate_tool_calls = simulate_tool_calls
+        self.model = model or "mock-model-v1"
         self._rng = random.Random(seed)  # noqa: S311
 
     def invoke(self, prompt: str, **kwargs: Any) -> ModelResponse:  # noqa: ANN401, ARG002
@@ -82,7 +85,7 @@ class MockAdapter:
                 "tokens": token_count,
                 "latency_ms": round(latency_ms, 2),
                 "cost_usd": round(cost_usd, 6),
-                "model": "mock-model-v1",
+                "model": self.model,
                 "finish_reason": "stop",
                 "seed": self.seed,
                 "response_mode": self.response_mode,

@@ -7,6 +7,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 
 from rich.console import Console
+from rich.markup import escape
 from rich.progress import (
     BarColumn,
     Progress,
@@ -245,7 +246,9 @@ def print_error(message: str) -> None:
     Args:
         message: Error message to display
     """
-    console.print(f"[bold red][!][/] {message}")
+    # Use Rich's escape() function to properly escape markup in user-provided strings
+    escaped_message = escape(message)
+    console.print(f"[bold red][!][/] {escaped_message}")
 
 
 def print_warning(message: str) -> None:
@@ -254,7 +257,9 @@ def print_warning(message: str) -> None:
     Args:
         message: Warning message to display
     """
-    console.print(f"[bold yellow][!][/] {message}")
+    # Use Rich's escape() function to properly escape markup in user-provided strings
+    escaped_message = escape(message)
+    console.print(f"[bold yellow][!][/] {escaped_message}")
 
 
 def print_info(message: str) -> None:
@@ -263,7 +268,9 @@ def print_info(message: str) -> None:
     Args:
         message: Info message to display
     """
-    console.print(f"[bold blue][*][/] {message}")
+    # Use Rich's escape() function to properly escape markup in user-provided strings
+    escaped_message = escape(message)
+    console.print(f"[bold blue][*][/] {escaped_message}")
 
 
 def print_success(message: str) -> None:
@@ -272,4 +279,6 @@ def print_success(message: str) -> None:
     Args:
         message: Success message to display
     """
-    console.print(f"[bold green][✓][/] {message}")
+    # Use Rich's escape() function to properly escape markup in user-provided strings
+    escaped_message = escape(message)
+    console.print(f"[bold green][✓][/] {escaped_message}")

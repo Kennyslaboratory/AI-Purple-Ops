@@ -6,6 +6,7 @@ from .anthropic import AnthropicAdapter
 from .bedrock import BedrockAdapter
 from .huggingface import HuggingFaceAdapter
 from .llamacpp import LlamaCppAdapter
+from .mcp_adapter import MCPAdapter
 from .mock import MockAdapter
 from .ollama import OllamaAdapter
 from .openai import OpenAIAdapter
@@ -13,12 +14,13 @@ from .registry import AdapterRegistry
 
 # Auto-register built-in adapters
 AdapterRegistry.register("mock", MockAdapter)
-AdapterRegistry.register("ollama", OllamaAdapter)
 AdapterRegistry.register("openai", OpenAIAdapter)
 AdapterRegistry.register("anthropic", AnthropicAdapter)
 AdapterRegistry.register("bedrock", BedrockAdapter)
 AdapterRegistry.register("huggingface", HuggingFaceAdapter)
+AdapterRegistry.register("ollama", OllamaAdapter)
 AdapterRegistry.register("llamacpp", LlamaCppAdapter)
+AdapterRegistry.register("mcp", MCPAdapter)
 
 __all__ = [
     "AdapterRegistry",
@@ -26,6 +28,7 @@ __all__ = [
     "BedrockAdapter",
     "HuggingFaceAdapter",
     "LlamaCppAdapter",
+    "MCPAdapter",
     "MockAdapter",
     "OllamaAdapter",
     "OpenAIAdapter",

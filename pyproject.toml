@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ai-purple-ops"
-version = "1.0.0"
+version = "1.2.3"
 description = "Vendor-neutral harness for AI safety, security, and compliance evaluation"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -25,6 +25,10 @@ dependencies = [
     "torch>=2.1.0,<3",  # Required for GCG white-box mode
     "tqdm>=4.66.0,<5",  # Progress bars for GCG iterations
     "scipy>=1.9.0,<2",  # Statistical functions for confidence intervals
+    "websocket-client>=1.8.0,<2",  # For MCP WebSocket transport
+    "platformdirs>=4.0,<5",  # XDG-compliant data directories
+    "alembic>=1.13,<2",  # Database migrations
+    "jinja2>=3.1,<4",  # Template rendering for reports
 ]
 
 [project.optional-dependencies]
@@ -40,6 +44,9 @@ dev = [
   "pre-commit>=3.8,<4",
   "types-PyYAML>=6.0.12,<7",
   "types-requests>=2.31,<3",
+]
+pro = [
+  "promptfoo>=0.90.0",  # CTF attack plugins and strategies
 ]
 local = [
     "transformers>=4.36.0",  # For tokenizer access in GCG
@@ -82,6 +89,11 @@ cloud = [
 ]
 all-adapters = [
   "ai-purple-ops[local,llamacpp,cloud]",
+]
+reports = [
+  "weasyprint>=60.0",
+  "haralyzer>=2.0",  # HAR validation
+  "pillow>=10.0",  # Image handling for reports
 ]
 
 [tool.black]

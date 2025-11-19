@@ -65,9 +65,65 @@ plugins_app = typer.Typer(
 )
 app.add_typer(plugins_app, name="plugins")
 
+# Create setup subcommand group
+from cli.setup import app as setup_app
+app.add_typer(setup_app, name="setup")
+
+# Create CTF subcommand group
+from cli.ctf import app as ctf_app
+app.add_typer(ctf_app, name="ctf")
+
+# Create MCP subcommand group
+from cli.mcp_commands import app as mcp_app
+app.add_typer(mcp_app, name="mcp")
+
+# Create Payloads subcommand group
+from cli.payloads import app as payloads_app
+app.add_typer(payloads_app, name="payloads")
+
+# Create Debug subcommand group
+from cli.debug_commands import app as debug_app
+app.add_typer(debug_app, name="debug")
+
+# Create Doctor subcommand group (v1.2.3)
+from cli.doctor import app as doctor_app
+app.add_typer(doctor_app, name="doctor")
+
+# Create Sessions subcommand group (v1.2.3)
+from cli.sessions import app as sessions_app
+app.add_typer(sessions_app, name="sessions")
+
 # Import batch command
 from cli.batch import batch_attack as batch_attack_func
 app.command(name="batch-attack")(batch_attack_func)
+
+
+def version_callback(value: bool) -> None:
+    """Show version and exit."""
+    if value:
+        typer.echo(f"AI Purple Ops v{__version__}")
+        raise typer.Exit()
+
+
+@app.callback()
+def main(
+    ctx: typer.Context,
+    version: bool = typer.Option(
+        None,
+        "--version",
+        "-v",
+        callback=version_callback,
+        is_eager=True,
+        help="Show version and exit",
+    ),
+) -> None:
+    """AI Purple Ops - LLM Security Testing Framework.
+    
+    Global context is shared across all commands via ctx.obj.
+    """
+    # Initialize context object for sharing state across commands
+    ctx.ensure_object(dict)
+    ctx.obj["config"] = {}
 
 
 def _apply_cli_overrides(
@@ -99,6 +155,165 @@ def version_cmd() -> None:
     """Print version."""
     log.info(f"AI Purple Ops version {__version__}")
     log.ok("Done")
+
+
+@app.command("export-traffic")
+def export_traffic_cmd(
+    session_id: str = typer.Argument(..., help="Session ID to export"),
+    format: str = typer.Option("json", "--format", "-f", help="Export format (json/har)"),
+    output: str | None = typer.Option(None, "--output", "-o", help="Output file path"),
+) -> None:
+    """Export captured traffic from a test session.
+    
+    The traffic capture data is automatically saved during 'aipop run --capture-traffic'.
+    Use this command to convert the captured data to different formats.
+    
+    Examples:
+        aipop export-traffic sess_20241117_143022 --format har
+        aipop export-traffic sess_20241117_143022 --format json --output traffic.json
+    """
+    try:
+        from harness.intelligence.traffic_capture import TrafficCapture
+        from pathlib import Path
+        
+        # Load existing session data
+        traffic_dir = Path("out/traffic")
+        tc = TrafficCapture(session_id=session_id, output_dir=traffic_dir)
+        
+        # Check if session has data
+        if not tc.requests:
+            print_warning(f"No traffic data found for session: {session_id}")
+            print_info("Make sure you ran the test with --capture-traffic flag")
+            raise typer.Exit(1)
+        
+        if format == "har":
+            path = tc.export_har(output)
+            print_success(f"Exported HAR: {path}")
+        elif format == "json":
+            path = tc.export_json(output)
+            print_success(f"Exported JSON: {path}")
+        else:
+            print_error(f"Unknown format: {format}. Use 'json' or 'har'.")
+            raise typer.Exit(1)
+    except FileNotFoundError:
+        print_error(f"Session not found: {session_id}")
+        print_info("Available sessions are stored in out/traffic/")
+        raise typer.Exit(1) from None
+    except Exception as e:
+        print_error(f"Failed to export traffic: {e}")
+        raise typer.Exit(1) from None
+
+
+@app.command("generate-pdf")
+def generate_pdf_cmd(
+    json_report: str = typer.Argument(..., help="Path to JSON report file"),
+    output: str = typer.Option("report.pdf", "--output", "-o", help="Output PDF file path"),
+) -> None:
+    """Generate PDF report from JSON.
+    
+    Examples:
+        aipop generate-pdf out/latest/report.json
+        aipop generate-pdf out/latest/report.json --output client_report.pdf
+    """
+    try:
+        from harness.reporting.pdf_generator import generate_report_from_json
+        
+        print_info(f"Generating PDF report from: {json_report}")
+        pdf_path = generate_report_from_json(json_report, output)
+        print_success(f"PDF report generated: {pdf_path}")
+    except ImportError:
+        print_error(
+            "reportlab is required for PDF generation. "
+            "Install with: pip install reportlab pillow"
+        )
+        raise typer.Exit(1) from None
+    except Exception as e:
+        print_error(f"Failed to generate PDF: {e}")
+        raise typer.Exit(1) from None
+
+
+@app.command("engagement")
+def manage_engagement(
+    action: str = typer.Argument(..., help="Action: create, list, show, update-status"),
+    engagement_id: str | None = typer.Option(None, "--id", help="Engagement ID"),
+    name: str | None = typer.Option(None, "--name", help="Engagement name"),
+    client: str | None = typer.Option(None, "--client", help="Client name"),
+    scope: str | None = typer.Option(None, "--scope", help="Comma-separated in-scope items"),
+    status: str | None = typer.Option(None, "--status", help="Status: planning, in_progress, reporting, completed"),
+) -> None:
+    """Manage security engagements.
+    
+    Examples:
+        aipop engagement create --name "AI Assessment" --client "Acme" --scope "api.example.com"
+        aipop engagement list
+        aipop engagement show --id eng_20241117_143022
+        aipop engagement update-status --id eng_20241117_143022 --status in_progress
+    """
+    try:
+        from harness.workflow.engagement_tracker import EngagementStatus, EngagementTracker
+        
+        tracker = EngagementTracker()
+        
+        if action == "create":
+            if not name or not client or not scope:
+                print_error("--name, --client, and --scope are required for create")
+                raise typer.Exit(1)
+            
+            in_scope = [s.strip() for s in scope.split(',')]
+            engagement = tracker.create_engagement(name, client, in_scope)
+            print_success(f"Created engagement: {engagement.id}")
+            print_info(f"  Name: {engagement.name}")
+            print_info(f"  Client: {engagement.client}")
+            print_info(f"  Scope: {', '.join(engagement.scope.in_scope)}")
+        
+        elif action == "list":
+            engagements = tracker.list_engagements()
+            if not engagements:
+                print_info("No engagements found")
+                return
+            
+            print_success(f"Found {len(engagements)} engagement(s):")
+            for eng in engagements:
+                print_info(f"  {eng.id}: {eng.name} ({eng.status.value}) - {eng.client}")
+        
+        elif action == "show":
+            if not engagement_id:
+                print_error("--id is required for show")
+                raise typer.Exit(1)
+            
+            summary = tracker.generate_summary(engagement_id)
+            if not summary:
+                print_error(f"Engagement not found: {engagement_id}")
+                raise typer.Exit(1)
+            
+            import json
+            print_success(f"Engagement {engagement_id}:")
+            print(json.dumps(summary, indent=2))
+        
+        elif action == "update-status":
+            if not engagement_id or not status:
+                print_error("--id and --status are required for update-status")
+                raise typer.Exit(1)
+            
+            try:
+                new_status = EngagementStatus(status)
+                tracker.update_status(engagement_id, new_status)
+                print_success(f"Updated engagement {engagement_id} to status: {status}")
+            except ValueError:
+                print_error(f"Invalid status: {status}")
+                print_info("Valid statuses: planning, in_progress, reporting, completed, archived")
+                raise typer.Exit(1)
+        
+        else:
+            print_error(f"Unknown action: {action}")
+            print_info("Valid actions: create, list, show, update-status")
+            raise typer.Exit(1)
+    
+    except Exception as e:
+        if not isinstance(e, typer.Exit):
+            print_error(f"Failed to manage engagement: {e}")
+            raise typer.Exit(1) from None
+        raise
 
 
 def _load_policy_with_prompt(
@@ -165,13 +380,14 @@ def _load_policy_with_prompt(
                 raise typer.Exit(code=0) from None
 
 
-def _create_adapter_from_cli(adapter_name: str, model_name: str | None, seed: int) -> Adapter:  # noqa: PLR0911
+def _create_adapter_from_cli(adapter_name: str, model_name: str | None, seed: int, proxy: str | None = None) -> Adapter:  # noqa: PLR0911
     """Create adapter instance from CLI arguments.
 
     Args:
         adapter_name: Name of adapter (mock, openai, anthropic, etc.)
         model_name: Optional model name to override default
         seed: Random seed for reproducible results
+        proxy: Optional proxy URL (e.g. http://127.0.0.1:8080)
 
     Returns:
         Adapter instance
@@ -206,21 +422,31 @@ def _create_adapter_from_cli(adapter_name: str, model_name: str | None, seed: in
         return adapter_class(seed=seed, response_mode="smart")
     elif adapter_name == "openai":
         config = {"model": model_name or "gpt-4o-mini"}
+        if proxy:
+            config["proxy"] = proxy
         return adapter_class(**config)
     elif adapter_name == "anthropic":
         config = {"model": model_name or "claude-3-5-sonnet-20241022"}
+        if proxy:
+            config["proxy"] = proxy
         return adapter_class(**config)
     elif adapter_name == "huggingface":
         config = {"model_name": model_name or "TinyLlama/TinyLlama-1.1B-Chat-v1.0"}
+        if proxy:
+            config["proxy"] = proxy
         return adapter_class(**config)
     elif adapter_name == "ollama":
         config = {"model": model_name or "tinyllama"}
+        if proxy:
+            config["proxy"] = proxy
         return adapter_class(**config)
     else:
         # Fallback for any other adapters
         config = {}
         if model_name:
             config["model"] = model_name
+        if proxy:
+            config["proxy"] = proxy
         return adapter_class(**config)
 
 
@@ -1146,6 +1372,7 @@ def verify_suite_cmd(
 
 @app.command("run")
 def run_cmd(
+    ctx: typer.Context,
     suite: str = typer.Option("normal", "--suite", "-s", help="Suite name to execute."),
     config: Path | None = typer.Option(
         None, "--config", "-c", help="Path to configs/harness.yaml."
@@ -1252,6 +1479,21 @@ def run_cmd(
     budget: float | None = typer.Option(
         None, "--budget", help="Budget limit in USD (warns if exceeded)"
     ),
+    proxy: str | None = typer.Option(
+        None, "--proxy", help="HTTP/SOCKS5 proxy (e.g. http://127.0.0.1:8080)"
+    ),
+    capture_traffic: bool = typer.Option(
+        False, "--capture-traffic", help="Capture HTTP request/response traffic for evidence"
+    ),
+    stealth: bool = typer.Option(
+        False, "--stealth", help="Enable stealth mode (rate limiting + random delays)"
+    ),
+    max_rate: str | None = typer.Option(
+        None, "--max-rate", help="Max request rate (e.g., '10/min', '5/sec')"
+    ),
+    random_delay: str | None = typer.Option(
+        None, "--random-delay", help="Random delay range in seconds (e.g., '1-3')"
+    ),
 ) -> None:
     """Execute test suite with real runner, adapters, and reporters.
 
@@ -1261,6 +1503,46 @@ def run_cmd(
         aipop run --suite normal --adapter mock --response-mode smart
     """
     try:
+        # Initialize context-based features (stealth, traffic capture)
+        session_id = f"sess_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        
+        if stealth or max_rate or random_delay:
+            from harness.intelligence.stealth_engine import StealthConfig, StealthEngine
+            
+            # Parse random delay range if provided
+            delay_min = 1.0
+            delay_max = 3.0
+            if random_delay:
+                try:
+                    delay_min, delay_max = map(float, random_delay.split("-"))
+                except ValueError:
+                    print_error(f"Invalid delay format: {random_delay}. Use format like '1-3'")
+                    raise typer.Exit(1)
+            
+            # Create stealth config
+            stealth_config = StealthConfig(
+                max_rate=max_rate or ("10/min" if stealth else None),
+                random_delay_min=delay_min,
+                random_delay_max=delay_max,
+                randomize_user_agent=stealth,
+                enabled=True,
+            )
+            stealth_engine = StealthEngine(stealth_config)
+            ctx.obj["stealth_engine"] = stealth_engine
+            print_info("🕵️  Stealth mode enabled" + (f" (rate: {max_rate or '10/min'})" if (stealth or max_rate) else ""))
+        
+        if capture_traffic:
+            from harness.intelligence.traffic_capture import TrafficCapture
+            
+            # Create traffic capture output directory
+            traffic_dir = Path("out/traffic")
+            traffic_dir.mkdir(parents=True, exist_ok=True)
+            
+            traffic_capture_inst = TrafficCapture(session_id=session_id, output_dir=traffic_dir)
+            ctx.obj["traffic_capture"] = traffic_capture_inst
+            ctx.obj["session_id"] = session_id
+            print_info(f"📡 Traffic capture enabled (session: {session_id})")
+        
         # Validate format immediately (before any execution)
         valid_formats = ["json", "junit", "both"]
         if format not in valid_formats:
@@ -1355,7 +1637,7 @@ def run_cmd(
         try:
             if adapter_name:
                 # Use CLI-specified adapter
-                adapter = _create_adapter_from_cli(adapter_name, model_name, cfg.run.seed)
+                adapter = _create_adapter_from_cli(adapter_name, model_name, cfg.run.seed, proxy)
             else:
                 # Fall back to mock adapter (backward compatible)
                 adapter = MockAdapter(seed=cfg.run.seed, response_mode=response_mode)
@@ -1536,8 +1818,8 @@ ASR: {asr_summary['asr']:.1%} ± {(ci_upper - ci_lower) / 2:.1%} (95% CI: [{ci_l
             console.print(f"Method: API metadata (gpt-4o-mini: $0.15/M input, $0.60/M output)")
             console.print(f"Total Cost: [bold]${cost_summary['total_cost']:.4f}[/bold]")
             console.print(f"Total Tokens: {cost_summary['total_tokens']:,}")
-            console.print("\n[dim]Note: Actual costs may vary due to caching, system prompts, or API updates.")
-            console.print("      Verify against provider dashboard for production use.[/dim]")
+            console.print("\n[dim]Note: Actual costs may vary due to caching, system prompts, or API updates.[/dim]")
+            console.print("[dim]      Verify against provider dashboard for production use.[/dim]")
             
             if cost_summary["operation_breakdown"]:
                 table = Table(title="Cost by Operation")
@@ -1581,8 +1863,9 @@ ASR: {asr_summary['asr']:.1%} ± {(ci_upper - ci_lower) / 2:.1%} (95% CI: [{ci_l
             "response_mode": response_mode,
         }
 
+        # Always write JSON summary (needed for gate command)
+        json_path = reports_dir / "summary.json"
         if format in ("json", "both"):
-            json_path = reports_dir / "summary.json"
             json_reporter = JSONReporter()
             json_reporter.write_summary(results, str(json_path))
 
@@ -1594,6 +1877,15 @@ ASR: {asr_summary['asr']:.1%} ± {(ci_upper - ci_lower) / 2:.1%} (95% CI: [{ci_l
                 json.dump(summary_data, f, indent=2, ensure_ascii=False)
 
             print_success(f"JSON report written: {json_path}")
+        elif format == "junit":
+            # Write summary even if format is junit-only (needed for gate command)
+            json_reporter = JSONReporter()
+            json_reporter.write_summary(results, str(json_path))
+            with json_path.open("r", encoding="utf-8") as f:
+                summary_data = json.load(f)
+            summary_data.update(summary_metadata)
+            with json_path.open("w", encoding="utf-8") as f:
+                json.dump(summary_data, f, indent=2, ensure_ascii=False)
 
         if format in ("junit", "both"):
             junit_path = reports_dir / "junit.xml"
@@ -1616,6 +1908,19 @@ ASR: {asr_summary['asr']:.1%} ± {(ci_upper - ci_lower) / 2:.1%} (95% CI: [{ci_l
             raise typer.Exit(code=1)
         else:
             print_success(f"All tests passed: {len(results)}/{len(results)}")
+        
+        # Cleanup: close traffic capture and export if enabled
+        if "traffic_capture" in ctx.obj:
+            traffic_capture_inst = ctx.obj["traffic_capture"]
+            try:
+                # Export captured traffic
+                json_export = traffic_capture_inst.export_json()
+                print_info(f"📡 Traffic captured: {json_export}")
+                print_info(f"   Export to HAR with: aipop export-traffic {ctx.obj['session_id']} --format har")
+            except Exception as e:
+                print_warning(f"Failed to export traffic: {e}")
+            finally:
+                traffic_capture_inst.close()
 
     except HarnessError as e:
         print_error(f"Harness error: {e}")

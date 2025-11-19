@@ -26,8 +26,10 @@ class ModelResponse:
     text: str
     meta: dict[str, Any] = field(default_factory=dict)
     tool_calls: list[dict[str, Any]] | None = None  # Tool/function calls made by model
+    capture_metadata: dict[str, Any] | None = None  # Optional HTTP request/response data for traffic capture
     # meta can include: tokens, finish_reason, cost, latency, provider, refusal, etc.
     # tool_calls format: [{"name": "tool_name", "arguments": {...}, "id": "call_id"}]
+    # capture_metadata format: {"method": "POST", "url": "...", "headers": {...}, "body": ..., "status": 200}
 
 
 @dataclass

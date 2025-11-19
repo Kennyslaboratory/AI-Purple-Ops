@@ -12,8 +12,8 @@ from pathlib import Path
 
 def generate_cache_key(method: str, prompt: str, model: str, implementation: str, params: dict) -> str:
     """Generate cache key matching AttackCache logic with versioning."""
-    # Hardcoded version to match main tool (update when version changes)
-    VERSION = "1.0.0"
+# Hardcoded version to match main tool (update when version changes)
+VERSION = "1.2.1"
     
     sorted_params = json.dumps(params, sort_keys=True)
     hash_input = f"{prompt}:{model}:{implementation}:{sorted_params}"

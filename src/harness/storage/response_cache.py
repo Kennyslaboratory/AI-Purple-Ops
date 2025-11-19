@@ -29,16 +29,23 @@ class CachedResponse:
 class ResponseCache:
     """DuckDB-backed response cache with TTL and statistics."""
 
-    def __init__(self, db_path: str | Path = "out/response_cache.duckdb", ttl_days: int = 7):
+    def __init__(self, db_path: str | Path = "out/response_cache.duckdb", ttl_days: int = 7, ttl_seconds: int | None = None):
         """Initialize response cache.
 
         Args:
             db_path: Path to DuckDB database
-            ttl_days: Time-to-live for cache entries in days
+            ttl_days: Time-to-live for cache entries in days (default: 7)
+            ttl_seconds: Time-to-live in seconds (overrides ttl_days if provided)
         """
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
-        self.ttl_seconds = ttl_days * 24 * 60 * 60
+        
+        # Support both ttl_days and ttl_seconds for backwards compatibility
+        if ttl_seconds is not None:
+            self.ttl_seconds = ttl_seconds
+        else:
+            self.ttl_seconds = ttl_days * 24 * 60 * 60
+            
         self._init_db()
 
         # Statistics
@@ -201,6 +208,14 @@ class ResponseCache:
             total_cost = conn.execute(
                 "SELECT SUM(cost) FROM response_cache"
             ).fetchone()[0] or 0.0
+            
+            unique_prompts = conn.execute(
+                "SELECT COUNT(DISTINCT prompt_hash) FROM response_cache"
+            ).fetchone()[0] or 0
+            
+            unique_models = conn.execute(
+                "SELECT COUNT(DISTINCT model_id) FROM response_cache"
+            ).fetchone()[0] or 0
 
             models = conn.execute(
                 """
@@ -211,6 +226,7 @@ class ResponseCache:
             ).fetchall()
 
         hit_rate = self.hits / (self.hits + self.misses) if (self.hits + self.misses) > 0 else 0.0
+        avg_cost_per_response = total_cost / total_entries if total_entries > 0 else 0.0
 
         return {
             "total_entries": total_entries,
@@ -219,6 +235,9 @@ class ResponseCache:
             "hit_rate": hit_rate,
             "total_tokens": total_tokens,
             "total_cost": total_cost,
+            "unique_prompts": unique_prompts,
+            "unique_models": unique_models,
+            "avg_cost_per_response": avg_cost_per_response,
             "by_model": [
                 {
                     "model_id": model_id,
@@ -230,19 +249,44 @@ class ResponseCache:
             ],
         }
 
-    def clear(self) -> int:
-        """Clear all cache entries.
+    def clear(self, model_id: str | None = None, older_than_seconds: float | None = None) -> int:
+        """Clear cache entries.
+
+        Args:
+            model_id: Only clear entries for this model (default: all models)
+            older_than_seconds: Only clear entries older than this (default: all ages)
 
         Returns:
             Number of entries removed
         """
         with duckdb.connect(str(self.db_path)) as conn:
-            result = conn.execute(
-                "DELETE FROM response_cache RETURNING id"
-            ).fetchall()
+            conditions = []
+            params = []
+
+            if model_id is not None:
+                conditions.append("model_id = ?")
+                params.append(model_id)
+
+            if older_than_seconds is not None:
+                cutoff_time = time.time() - older_than_seconds
+                conditions.append("timestamp < ?")
+                params.append(cutoff_time)
+
+            where_clause = " AND ".join(conditions) if conditions else "1=1"
+            query = f"DELETE FROM response_cache WHERE {where_clause} RETURNING id"
+
+            result = conn.execute(query, params).fetchall()
             count = len(result)
             logger.info(f"Cleared {count} cache entries")
             return count
+
+    def close(self) -> None:
+        """Close cache database connection.
+        
+        Note: With context manager pattern, connections are auto-closed.
+        This method is a no-op for backwards compatibility.
+        """
+        pass
 
     def _hash_prompt(self, prompt: str) -> str:
         """Generate hash for prompt.

@@ -22,6 +22,9 @@ def temp_cache_db():
     """Create temporary cache database."""
     with tempfile.NamedTemporaryFile(delete=False, suffix=".db") as f:
         db_path = f.name
+    
+    # Delete the empty file so DuckDB can create a proper database
+    Path(db_path).unlink(missing_ok=True)
 
     yield db_path
 
@@ -48,12 +51,15 @@ def test_cache_initialization(cache):
 
 def test_cache_creates_table(temp_cache_db):
     """Test cache creates table on initialization."""
+    import duckdb
+    
     cache = ResponseCache(db_path=temp_cache_db)
 
-    # Query should work (table exists)
-    result = cache.conn.execute(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name='response_cache'"
-    ).fetchone()
+    # Query should work (table exists) - use DuckDB context manager
+    with duckdb.connect(str(cache.db_path)) as conn:
+        result = conn.execute(
+            "SELECT table_name FROM information_schema.tables WHERE table_name='response_cache'"
+        ).fetchone()
 
     assert result is not None
 
@@ -80,7 +86,7 @@ def test_store_and_retrieve_response(cache):
     assert cached is not None
     assert isinstance(cached, CachedResponse)
     assert cached.response == response
-    assert cached.tokens == tokens
+    assert cached.tokens_used == tokens
     assert cached.cost == cost
 
 
@@ -123,7 +129,7 @@ def test_cache_update_existing(cache):
     # Should retrieve latest
     cached = cache.get_cached_response(prompt, model_id)
     assert cached.response == "Response 2"
-    assert cached.tokens == 150
+    assert cached.tokens_used == 150
 
 
 # ============================================================================
@@ -174,7 +180,7 @@ def test_ttl_custom_value(temp_cache_db):
 
 def test_cache_stats_empty(cache):
     """Test cache stats with empty cache."""
-    stats = cache.get_cache_stats()
+    stats = cache.get_statistics()
 
     assert stats["total_entries"] == 0
     assert stats["total_tokens"] == 0
@@ -190,7 +196,7 @@ def test_cache_stats_with_entries(cache):
     cache.store_response("prompt2", "model1", "response2", 150, 0.0015)
     cache.store_response("prompt1", "model2", "response3", 200, 0.002)
 
-    stats = cache.get_cache_stats()
+    stats = cache.get_statistics()
 
     assert stats["total_entries"] == 3
     assert stats["total_tokens"] == 450
@@ -204,7 +210,7 @@ def test_cache_stats_average_cost(cache):
     cache.store_response("prompt1", "model", "response", 100, 0.001)
     cache.store_response("prompt2", "model", "response", 100, 0.003)
 
-    stats = cache.get_cache_stats()
+    stats = cache.get_statistics()
 
     # Average should be (0.001 + 0.003) / 2 = 0.002
     assert abs(stats["avg_cost_per_response"] - 0.002) < 0.0001
@@ -226,14 +232,14 @@ def test_clear_cache(cache):
     assert cache.get_cached_response("prompt2", "model") is not None
 
     # Clear cache
-    cache.clear_cache()
+    cache.clear()
 
     # Verify they're gone
     assert cache.get_cached_response("prompt1", "model") is None
     assert cache.get_cached_response("prompt2", "model") is None
 
     # Stats should be reset
-    stats = cache.get_cache_stats()
+    stats = cache.get_statistics()
     assert stats["total_entries"] == 0
 
 
@@ -244,7 +250,7 @@ def test_clear_cache_by_model(cache):
     cache.store_response("prompt", "model2", "response2", 100, 0.001)
 
     # Clear only model1
-    cache.clear_cache(model_id="model1")
+    cache.clear(model_id="model1")
 
     # model1 should be cleared
     assert cache.get_cached_response("prompt", "model1") is None
@@ -267,7 +273,7 @@ def test_clear_cache_by_age(temp_cache_db):
     cache.store_response("new_prompt", "model", "response", 100, 0.001)
 
     # Clear entries older than 0.5 seconds
-    cache.clear_cache(older_than_seconds=0.5)
+    cache.clear(older_than_seconds=0.5)
 
     # Old should be cleared, new should remain
     assert cache.get_cached_response("old_prompt", "model") is None

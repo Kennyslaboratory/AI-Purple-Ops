@@ -5,6 +5,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 
 from rich.console import Console
+from rich.markup import escape
 from rich.traceback import install as rich_traceback
 
 rich_traceback(show_locals=False)
@@ -21,35 +22,35 @@ class ConsoleLogger:
 
     def info(self, msg: str) -> None:
         assert self._console is not None
-        self._console.print(f"[cyan][*][/cyan] {msg}")
+        self._console.print(f"[cyan][*][/cyan] {escape(msg)}")
 
     def ok(self, msg: str) -> None:
         assert self._console is not None
-        self._console.print(f"[bold green][+][/bold green] {msg}")
+        self._console.print(f"[bold green][+][/bold green] {escape(msg)}")
 
     def warn(self, msg: str) -> None:
         assert self._console is not None
-        self._console.print(f"[yellow][!][/yellow] {msg}")
+        self._console.print(f"[yellow][!][/yellow] {escape(msg)}")
 
     def error(self, msg: str) -> None:
         assert self._console is not None
-        self._console.print(f"[bold red]\\[x][/bold red] {msg}")
+        self._console.print(f"[bold red]\\[x][/bold red] {escape(msg)}")
 
     def try_(self, msg: str) -> None:
         assert self._console is not None
-        self._console.print(f"[blue][~][/blue] {msg}")
+        self._console.print(f"[blue][~][/blue] {escape(msg)}")
 
     def skip(self, msg: str) -> None:
         assert self._console is not None
-        self._console.print(f"[dim][-][/dim] {msg}")
+        self._console.print(f"[dim][-][/dim] {escape(msg)}")
 
     def debug(self, msg: str) -> None:
         assert self._console is not None
-        self._console.print(f"[dim][~][/dim] {msg}")
+        self._console.print(f"[dim][~][/dim] {escape(msg)}")
 
     def step(self, msg: str) -> None:
         assert self._console is not None
-        self._console.print(f"[magenta][>][/magenta] {msg}")
+        self._console.print(f"[magenta][>][/magenta] {escape(msg)}")
 
     @contextmanager
     def section(self, title: str) -> Iterator[None]:

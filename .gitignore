@@ -41,6 +41,7 @@ coverage.xml
 htmlcov/
 custom_out/
 env_out/
+batch_results/
 reports/
 evidence/
 
