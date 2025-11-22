@@ -10,16 +10,64 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+# Pricing constants (as of November 2025)
+# Sources: 
+# - OpenAI: https://openai.com/api/pricing/ (accessed 2025-11-19)
+# - Anthropic: https://www.anthropic.com/pricing (accessed 2025-11-19)
+# 
+# Note: Pricing subject to change. Update quarterly.
+# Margin of error: ±5% (system prompts, caching, streaming overhead)
+
+MODEL_PRICING = {
+    "gpt-4o-mini": {
+        "input_per_million": 0.15,
+        "output_per_million": 0.60,
+    },
+    "gpt-4o": {
+        "input_per_million": 2.50,
+        "output_per_million": 10.00,
+    },
+    "gpt-4": {
+        "input_per_million": 30.00,
+        "output_per_million": 60.00,
+    },
+    "gpt-3.5-turbo": {
+        "input_per_million": 0.50,
+        "output_per_million": 1.50,
+    },
+    "claude-3-5-sonnet-20241022": {
+        "input_per_million": 3.00,
+        "output_per_million": 15.00,
+    },
+    "claude-3-opus-20240229": {
+        "input_per_million": 15.00,
+        "output_per_million": 75.00,
+    },
+    "claude-3-5-haiku-20241022": {
+        "input_per_million": 0.80,
+        "output_per_million": 4.00,
+    },
+}
+
+PRICING_DATE = "2025-11-19"
+PRICING_MARGIN_OF_ERROR = 0.05  # ±5%
+
 
 @dataclass
 class CostOperation:
     """Represents a single cost operation."""
 
     operation: str
-    tokens: int
     model: str
-    cost: float
+    input_tokens: int = 0
+    output_tokens: int = 0
+    cost: float = 0.0
     timestamp: datetime = field(default_factory=datetime.now)
+    
+    @property
+    def total_tokens(self) -> int:
+        """Total tokens (input + output)."""
+        return self.input_tokens + self.output_tokens
 
 
 class CostTracker:
@@ -28,33 +76,85 @@ class CostTracker:
     Provides per-operation cost visibility and budget warnings.
     """
 
-    def __init__(self):
-        """Initialize cost tracker."""
+    def __init__(self, budget_usd: float | None = None):
+        """Initialize cost tracker.
+        
+        Args:
+            budget_usd: Optional budget limit in USD
+        """
         self.operations: list[CostOperation] = []
+        self.budget_usd = budget_usd
 
     def track(
         self,
         operation: str,
-        tokens: int,
         model: str,
-        cost: float,
+        input_tokens: int | None = None,
+        output_tokens: int | None = None,
+        tokens: int | None = None,  # Deprecated, for backward compat
+        cost: float | None = None,
     ) -> None:
         """Track a cost operation.
-
+        
         Args:
-            operation: Operation name (e.g., "generate-suffix", "verify-suite", "run")
-            tokens: Token count (prompt + completion)
+            operation: Operation name
             model: Model identifier
-            cost: Cost in USD
+            input_tokens: Input token count (preferred)
+            output_tokens: Output token count (preferred)
+            tokens: Total tokens (deprecated, for backward compatibility)
+            cost: Explicit cost (if None, auto-calculated from pricing)
         """
+        # Handle backward compatibility
+        if input_tokens is None and output_tokens is None:
+            if tokens is not None:
+                # Old API: split 40/60 (typical prompt/completion ratio)
+                input_tokens = int(tokens * 0.4)
+                output_tokens = int(tokens * 0.6)
+            else:
+                # Default to 0 if no token counts provided
+                input_tokens = 0
+                output_tokens = 0
+        
+        # Ensure we have non-None values
+        if input_tokens is None:
+            input_tokens = 0
+        if output_tokens is None:
+            output_tokens = 0
+        
+        # Auto-calculate cost if not provided
+        if cost is None:
+            cost = self._calculate_cost(model, input_tokens, output_tokens)
+        
         self.operations.append(
             CostOperation(
                 operation=operation,
-                tokens=tokens,
                 model=model,
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
                 cost=cost,
             )
         )
+
+    def _calculate_cost(self, model: str, input_tokens: int, output_tokens: int) -> float:
+        """Calculate cost from token counts.
+        
+        Args:
+            model: Model identifier
+            input_tokens: Input token count
+            output_tokens: Output token count
+            
+        Returns:
+            Cost in USD
+        """
+        if model not in MODEL_PRICING:
+            logger.warning(f"Unknown model '{model}', using gpt-3.5-turbo pricing")
+            model = "gpt-3.5-turbo"
+        
+        pricing = MODEL_PRICING[model]
+        input_cost = (input_tokens / 1_000_000) * pricing["input_per_million"]
+        output_cost = (output_tokens / 1_000_000) * pricing["output_per_million"]
+        
+        return input_cost + output_cost
 
     def get_summary(self) -> dict[str, Any]:
         """Get cost summary statistics.
@@ -65,57 +165,71 @@ class CostTracker:
         if not self.operations:
             return {
                 "total_cost": 0.0,
+                "total_input_tokens": 0,
+                "total_output_tokens": 0,
                 "total_tokens": 0,
                 "operation_breakdown": {},
                 "model_breakdown": {},
                 "operation_count": 0,
+                "pricing_date": PRICING_DATE,
+                "margin_of_error": PRICING_MARGIN_OF_ERROR,
             }
-
+        
         total_cost = sum(op.cost for op in self.operations)
-        total_tokens = sum(op.tokens for op in self.operations)
+        total_input = sum(op.input_tokens for op in self.operations)
+        total_output = sum(op.output_tokens for op in self.operations)
 
         # Breakdown by operation
         operation_breakdown: dict[str, dict[str, Any]] = defaultdict(
-            lambda: {"cost": 0.0, "tokens": 0, "count": 0}
+            lambda: {"cost": 0.0, "input_tokens": 0, "output_tokens": 0, "total_tokens": 0, "count": 0}
         )
         for op in self.operations:
             operation_breakdown[op.operation]["cost"] += op.cost
-            operation_breakdown[op.operation]["tokens"] += op.tokens
+            operation_breakdown[op.operation]["input_tokens"] += op.input_tokens
+            operation_breakdown[op.operation]["output_tokens"] += op.output_tokens
+            operation_breakdown[op.operation]["total_tokens"] += op.total_tokens
             operation_breakdown[op.operation]["count"] += 1
 
         # Breakdown by model
         model_breakdown: dict[str, dict[str, Any]] = defaultdict(
-            lambda: {"cost": 0.0, "tokens": 0, "count": 0}
+            lambda: {"cost": 0.0, "input_tokens": 0, "output_tokens": 0, "total_tokens": 0, "count": 0}
         )
         for op in self.operations:
             model_breakdown[op.model]["cost"] += op.cost
-            model_breakdown[op.model]["tokens"] += op.tokens
+            model_breakdown[op.model]["input_tokens"] += op.input_tokens
+            model_breakdown[op.model]["output_tokens"] += op.output_tokens
+            model_breakdown[op.model]["total_tokens"] += op.total_tokens
             model_breakdown[op.model]["count"] += 1
 
         return {
-            "total_cost": total_cost,
-            "total_tokens": total_tokens,
+            "total_cost": total_cost,  # Don't round - preserve full precision
+            "total_input_tokens": total_input,
+            "total_output_tokens": total_output,
+            "total_tokens": total_input + total_output,
             "operation_breakdown": dict(operation_breakdown),
             "model_breakdown": dict(model_breakdown),
             "operation_count": len(self.operations),
+            "pricing_date": PRICING_DATE,
+            "margin_of_error": PRICING_MARGIN_OF_ERROR,
+            "estimated_range": {
+                "min": total_cost * (1 - PRICING_MARGIN_OF_ERROR),
+                "max": total_cost * (1 + PRICING_MARGIN_OF_ERROR),
+            },
         }
 
-    def warn_if_over_budget(self, budget: float) -> bool:
-        """Warn if total cost exceeds budget.
-
-        Args:
-            budget: Budget limit in USD
-
+    def warn_if_over_budget(self) -> bool:
+        """Check if total cost exceeds budget and warn.
+        
         Returns:
             True if over budget, False otherwise
         """
-        summary = self.get_summary()
-        total_cost = summary["total_cost"]
-
-        if total_cost > budget:
+        if self.budget_usd is None:
+            return False
+        
+        total_cost = sum(op.cost for op in self.operations)
+        if total_cost > self.budget_usd:
             logger.warning(
-                f"⚠️  Over budget: ${total_cost:.2f} / ${budget:.2f} "
-                f"({total_cost / budget * 100:.1f}%)"
+                f"Cost ${total_cost:.2f} exceeds budget ${self.budget_usd:.2f}"
             )
             return True
         return False
@@ -170,14 +284,17 @@ class CostTracker:
         mutation_queries = int(population_size * num_generations * 0.01)  # 1% mutation rate
         total_queries = fitness_queries + mutation_queries
 
-        # Get cost per query (simplified - assumes average tokens)
-        cost_per_query = self._get_model_cost_per_query(model)
-        mutator_cost_per_query = (
-            self._get_model_cost_per_query(mutator_model) if mutator_model else cost_per_query
-        )
+        # Estimate tokens per query (typical values)
+        input_tokens_per_query = 100
+        output_tokens_per_query = 200
 
-        fitness_cost = fitness_queries * cost_per_query
-        mutation_cost = mutation_queries * mutator_cost_per_query
+        # Calculate costs
+        fitness_cost = fitness_queries * self._calculate_cost(
+            model, input_tokens_per_query, output_tokens_per_query
+        )
+        mutation_cost = mutation_queries * self._calculate_cost(
+            mutator_model or model, input_tokens_per_query, output_tokens_per_query
+        )
         total_cost = fitness_cost + mutation_cost
 
         return {
@@ -211,17 +328,20 @@ class CostTracker:
             Dictionary with cost estimates and warnings
         """
         # PAIR uses N * K queries (attacker + target per iteration)
-        queries_per_stream = iterations_per_stream * 2  # Attacker + target
-        total_queries = num_streams * queries_per_stream
-
-        attacker_cost_per_query = self._get_model_cost_per_query(attacker_model)
-        target_cost_per_query = self._get_model_cost_per_query(target_model)
-
         attacker_queries = num_streams * iterations_per_stream
         target_queries = num_streams * iterations_per_stream
+        total_queries = attacker_queries + target_queries
 
-        attacker_cost = attacker_queries * attacker_cost_per_query
-        target_cost = target_queries * target_cost_per_query
+        # Estimate tokens per query (typical values)
+        input_tokens_per_query = 100
+        output_tokens_per_query = 200
+
+        attacker_cost = attacker_queries * self._calculate_cost(
+            attacker_model, input_tokens_per_query, output_tokens_per_query
+        )
+        target_cost = target_queries * self._calculate_cost(
+            target_model, input_tokens_per_query, output_tokens_per_query
+        )
         total_cost = attacker_cost + target_cost
 
         return {
@@ -235,25 +355,3 @@ class CostTracker:
             "attacker_model": attacker_model,
             "target_model": target_model,
         }
-
-    def _get_model_cost_per_query(self, model: str) -> float:
-        """Get estimated cost per query for a model.
-
-        Args:
-            model: Model identifier
-
-        Returns:
-            Estimated cost per query in USD
-        """
-        # Simplified cost estimation (can be enhanced with actual pricing)
-        # Assumes average 100 tokens input + 200 tokens output
-        pricing = {
-            "gpt-4": 0.03 / 1000 * 100 + 0.06 / 1000 * 200,  # $0.03/1k input, $0.06/1k output
-            "gpt-4o-mini": 0.15 / 1000 * 100 + 0.60 / 1000 * 200,
-            "gpt-3.5-turbo": 0.50 / 1000 * 100 + 1.50 / 1000 * 200,
-            "claude-3-5-sonnet-20241022": 3.00 / 1000 * 100 + 15.00 / 1000 * 200,
-            "claude-3-5-haiku-20241022": 0.80 / 1000 * 100 + 4.00 / 1000 * 200,
-        }
-
-        return pricing.get(model.lower(), 0.01)  # Default $0.01 per query
-

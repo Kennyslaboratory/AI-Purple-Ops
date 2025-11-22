@@ -136,6 +136,61 @@ def load_metrics_from_summary(summary_path: Path | str) -> dict[str, float]:
         raise GateEvaluationError(f"Error loading metrics from summary: {e}") from e
 
 
+def load_metrics_from_junit(junit_path: Path | str) -> dict[str, float]:
+    """Parse JUnit XML and extract metrics for gate evaluation.
+    
+    Args:
+        junit_path: Path to junit.xml file
+        
+    Returns:
+        Metrics dict compatible with gate evaluation
+        
+    Raises:
+        GateEvaluationError: If junit file cannot be loaded or is invalid
+    """
+    import xml.etree.ElementTree as ET
+    
+    junit_path = Path(junit_path)
+    
+    if not junit_path.exists():
+        raise GateEvaluationError(f"JUnit file not found: {junit_path}")
+    
+    try:
+        tree = ET.parse(junit_path)
+        root = tree.getroot()
+        
+        # Extract from <testsuite> attributes
+        testsuite = root.find("testsuite")
+        if testsuite is None:
+            testsuite = root  # Sometimes root is testsuite
+        
+        total = int(testsuite.get("tests", 0))
+        failures = int(testsuite.get("failures", 0))
+        errors = int(testsuite.get("errors", 0))
+        skipped = int(testsuite.get("skipped", 0))
+        
+        passed = total - failures - errors - skipped
+        
+        metrics = {
+            "total": float(total),
+            "passed": float(passed),
+            "failed": float(failures + errors),
+            "skipped": float(skipped),
+        }
+        
+        # Add success rate
+        if total > 0:
+            metrics["success_rate"] = passed / total
+            metrics["pass_rate"] = passed / total
+        
+        return metrics
+    
+    except ET.ParseError as e:
+        raise GateEvaluationError(f"Invalid XML in JUnit file: {e}") from e
+    except Exception as e:
+        raise GateEvaluationError(f"Error loading metrics from JUnit: {e}") from e
+
+
 def evaluate_gates(
     metrics: Mapping[str, float],
     thresholds: dict[str, float],

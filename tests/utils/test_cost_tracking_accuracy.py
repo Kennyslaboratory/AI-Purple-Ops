@@ -347,7 +347,7 @@ class TestCostBudgetWarnings:
 
     def test_budget_warning_triggered(self):
         """Test that budget warning is triggered when threshold exceeded."""
-        tracker = CostTracker(budget=0.01)  # $0.01 budget
+        tracker = CostTracker(budget_usd=0.01)  # $0.01 budget
         
         # Track operations that exceed budget
         for _ in range(100):
@@ -363,7 +363,7 @@ class TestCostBudgetWarnings:
 
     def test_budget_warning_not_triggered(self):
         """Test that budget warning is not triggered when under threshold."""
-        tracker = CostTracker(budget=1.00)  # $1.00 budget
+        tracker = CostTracker(budget_usd=1.00)  # $1.00 budget
         
         # Track small operation
         tracker.track("test", input_tokens=1000, output_tokens=500, model="gpt-4o-mini")
@@ -420,7 +420,9 @@ class TestCostTransparency:
         op_stats = summary["operation_breakdown"]["test_op"]
         
         assert "cost" in op_stats
-        assert "tokens" in op_stats
+        assert "total_tokens" in op_stats
+        assert "input_tokens" in op_stats
+        assert "output_tokens" in op_stats
         assert "count" in op_stats
 
 

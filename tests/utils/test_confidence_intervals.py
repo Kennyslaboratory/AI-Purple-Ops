@@ -32,7 +32,7 @@ class TestWilsonScoreInterval:
         """Test Wilson score with zero successes."""
         lower, upper = wilson_score_interval(successes=0, trials=100, confidence=0.95)
         
-        assert lower == 0.0, "Lower bound should be 0 for zero successes"
+        assert lower < 1e-10, "Lower bound should be essentially 0 for zero successes (allowing floating point precision)"
         assert 0 < upper < 0.05, "Upper bound should be small but non-zero"
 
     def test_wilson_score_all_successes(self):
@@ -298,6 +298,13 @@ class TestMonteCarloCoverage:
     @pytest.mark.slow
     def test_wilson_coverage_monte_carlo(self):
         """Verify Wilson score achieves ~95% coverage via Monte Carlo simulation."""
+        import random
+        import numpy as np
+        
+        # Set seeds for reproducibility
+        random.seed(42)
+        np.random.seed(42)
+        
         # Simulation parameters
         true_p = 0.15  # True success rate
         n = 50  # Sample size
@@ -326,6 +333,13 @@ class TestMonteCarloCoverage:
     @pytest.mark.slow
     def test_clopper_pearson_coverage_monte_carlo(self):
         """Verify Clopper-Pearson achieves ≥95% coverage via Monte Carlo simulation."""
+        import random
+        import numpy as np
+        
+        # Set seeds for reproducibility
+        random.seed(43)  # Different seed for independence
+        np.random.seed(43)
+        
         # Simulation parameters
         true_p = 0.15
         n = 50
@@ -349,6 +363,13 @@ class TestMonteCarloCoverage:
     @pytest.mark.slow
     def test_coverage_for_small_n(self):
         """Test coverage for small sample sizes where Wilson may under-cover."""
+        import random
+        import numpy as np
+        
+        # Set seeds for reproducibility
+        random.seed(44)  # Different seed for independence
+        np.random.seed(44)
+        
         true_p = 0.10
         n = 15  # Small sample
         num_simulations = 1000
@@ -444,9 +465,9 @@ class TestRealWorldScenarios:
         # Point estimate should be ~16.7%
         assert 0.15 < result.point_estimate < 0.18
         
-        # CI should be reasonably narrow
+        # CI should be reasonably narrow (for small n=30, width ~0.26 is expected)
         width = result.upper - result.lower
-        assert width < 0.20, "CI should be reasonably narrow for n=30"
+        assert width < 0.30, "CI should be reasonably narrow for n=30"
 
     def test_high_asr_scenario(self):
         """Test with high ASR (80% jailbreak success)."""

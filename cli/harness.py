@@ -23,7 +23,7 @@ from harness.adapters.wizard import generate_adapter_file, run_wizard
 from harness.detectors.harmful_content import HarmfulContentDetector
 from harness.detectors.tool_policy import ToolPolicyDetector
 from harness.executors import execute_recipe
-from harness.gates import evaluate_gates, load_metrics_from_summary, load_thresholds_from_policy
+from harness.gates import evaluate_gates, load_metrics_from_summary, load_metrics_from_junit, load_thresholds_from_policy
 from harness.loaders.policy_loader import PolicyConfig, PolicyLoadError, load_policy
 from harness.loaders.recipe_loader import RecipeLoadError, load_recipe
 from harness.loaders.suite_registry import (
@@ -1863,7 +1863,7 @@ ASR: {asr_summary['asr']:.1%} ± {(ci_upper - ci_lower) / 2:.1%} (95% CI: [{ci_l
             "response_mode": response_mode,
         }
 
-        # Always write JSON summary (needed for gate command)
+        # Write reports based on format flag
         json_path = reports_dir / "summary.json"
         if format in ("json", "both"):
             json_reporter = JSONReporter()
@@ -1877,15 +1877,6 @@ ASR: {asr_summary['asr']:.1%} ± {(ci_upper - ci_lower) / 2:.1%} (95% CI: [{ci_l
                 json.dump(summary_data, f, indent=2, ensure_ascii=False)
 
             print_success(f"JSON report written: {json_path}")
-        elif format == "junit":
-            # Write summary even if format is junit-only (needed for gate command)
-            json_reporter = JSONReporter()
-            json_reporter.write_summary(results, str(json_path))
-            with json_path.open("r", encoding="utf-8") as f:
-                summary_data = json.load(f)
-            summary_data.update(summary_metadata)
-            with json_path.open("w", encoding="utf-8") as f:
-                json.dump(summary_data, f, indent=2, ensure_ascii=False)
 
         if format in ("junit", "both"):
             junit_path = reports_dir / "junit.xml"
@@ -2098,47 +2089,76 @@ def gate_cmd(
         cfg = load_config(config_path_str)
         preflight(config_path_str)
 
-        # Check for summary.json (b04 output) instead of old smoke test file
+        # Check for summary.json first, fallback to junit.xml
         candidate = summary or (Path(cfg.run.reports_dir) / "summary.json")
+        junit_candidate = Path(cfg.run.reports_dir) / "junit.xml"
+        use_junit = False
 
         with log.section("Quality Gate Check"):
             if not candidate.exists():
-                print_error(f"Gate failed: Summary not found: {candidate}")
-                print_info("Run tests first with: aipop run")
-                raise typer.Exit(code=1)
+                # Try junit.xml as fallback
+                if junit_candidate.exists():
+                    print_info(f"Using JUnit XML for gate evaluation: {junit_candidate}")
+                    use_junit = True
+                    candidate = junit_candidate
+                else:
+                    print_error(f"Gate failed: No summary.json or junit.xml found in {cfg.run.reports_dir}")
+                    print_info("Run tests first with: aipop run")
+                    raise typer.Exit(code=1)
 
-            # Validate summary file content
-            try:
-                data = json.loads(candidate.read_text(encoding="utf-8"))
-            except json.JSONDecodeError as e:
-                print_error(f"Gate failed: Invalid JSON in summary file: {e}")
-                raise typer.Exit(code=1) from None
+            # Load metrics based on file type
+            if use_junit:
+                # Load from JUnit XML
+                try:
+                    metrics = load_metrics_from_junit(candidate)
+                    run_id = f"junit-{candidate.stem}"
+                    
+                    # Check for test failures from JUnit
+                    failed = int(metrics.get("failed", 0))
+                    if failed > 0:
+                        print_error(f"Gate failed: {failed} test(s) failed")
+                        print_info("Fix test failures before evaluating gates.")
+                        raise typer.Exit(code=1)
+                    
+                except Exception as e:
+                    print_error(f"Gate failed: Could not parse JUnit file: {e}")
+                    raise typer.Exit(code=1) from None
+            else:
+                # Load from JSON summary
+                try:
+                    data = json.loads(candidate.read_text(encoding="utf-8"))
+                except json.JSONDecodeError as e:
+                    print_error(f"Gate failed: Invalid JSON in summary file: {e}")
+                    raise typer.Exit(code=1) from None
 
-            # Check required fields
-            if "run_id" not in data:
-                print_error("Gate failed: Summary missing required field 'run_id'")
-                raise typer.Exit(code=1)
+                # Check required fields
+                if "run_id" not in data:
+                    print_error("Gate failed: Summary missing required field 'run_id'")
+                    raise typer.Exit(code=1)
 
-            run_id = data.get("run_id", "unknown")
+                run_id = data.get("run_id", "unknown")
 
-            # Check for test failures first (before threshold evaluation)
-            failed = data.get("failed", 0)
-            if failed > 0:
-                print_error(f"Gate failed: {failed} test(s) failed")
-                # Show which tests failed
-                failing_tests = [
-                    r.get("test_id", "unknown")
-                    for r in data.get("results", [])
-                    if not r.get("passed", True)
-                ]
-                if failing_tests:
-                    print_info("Failed tests:")
-                    for test_id in failing_tests[:5]:  # Show first 5
-                        print_info(f"  - {test_id}")
-                    if len(failing_tests) > 5:
-                        print_info(f"  ... and {len(failing_tests) - 5} more")
-                print_info("Fix test failures before evaluating gates.")
-                raise typer.Exit(code=1)
+                # Check for test failures first (before threshold evaluation)
+                failed = data.get("failed", 0)
+                if failed > 0:
+                    print_error(f"Gate failed: {failed} test(s) failed")
+                    # Show which tests failed
+                    failing_tests = [
+                        r.get("test_id", "unknown")
+                        for r in data.get("results", [])
+                        if not r.get("passed", True)
+                    ]
+                    if failing_tests:
+                        print_info("Failed tests:")
+                        for test_id in failing_tests[:5]:  # Show first 5
+                            print_info(f"  - {test_id}")
+                        if len(failing_tests) > 5:
+                            print_info(f"  ... and {len(failing_tests) - 5} more")
+                    print_info("Fix test failures before evaluating gates.")
+                    raise typer.Exit(code=1)
+
+                # Load metrics from summary for JSON case
+                metrics = load_metrics_from_summary(candidate)
 
             # Load thresholds from policy
             try:
@@ -2152,13 +2172,8 @@ def gate_cmd(
                 print_info("Continuing without threshold checks...")
                 thresholds = {}
 
-            # Load metrics from summary
-            try:
-                metrics = load_metrics_from_summary(candidate)
-                print_info(f"Loaded metrics from summary: {len(metrics)} metric(s)")
-            except Exception as e:
-                print_error(f"Failed to load metrics: {e}")
-                raise typer.Exit(code=1) from None
+            # Metrics already loaded above in if/else block
+            print_info(f"Loaded metrics: {len(metrics)} metric(s)")
 
             # Evaluate gates
             gate_result = evaluate_gates(metrics, thresholds)
