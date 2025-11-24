@@ -431,3 +431,65 @@ class PyRITOrchestrator:
             "max_turns": self.max_turns,
         }
 
+    def get_raw_memory(self):
+        """Get raw PyRIT memory for bleeding-edge features and advanced use cases.
+
+        This escape hatch allows direct access to PyRIT internals, enabling
+        use of bleeding-edge PyRIT features without waiting for AI Purple Ops updates.
+
+        Returns:
+            DuckDBMemory: Raw PyRIT memory object (or None if memory initialization failed)
+
+        Example:
+            >>> orchestrator = PyRITOrchestrator(config=config)
+            >>> raw_memory = orchestrator.get_raw_memory()
+            >>>
+            >>> # Use brand new PyRIT feature directly
+            >>> from pyrit.scorer import BrandNewScorer  # PyRIT v0.10+ feature
+            >>> scorer = BrandNewScorer()
+            >>> raw_memory.add_scorer(scorer)  # Works immediately, no AI Purple Ops update needed
+        """
+        return self.memory
+
+    def __getattr__(self, name: str):
+        """Auto-passthrough for PyRIT methods not explicitly wrapped.
+
+        This ensures bleeding-edge PyRIT features work immediately without
+        AI Purple Ops updates. If a method/attribute isn't found on
+        PyRITOrchestrator, it's forwarded to the underlying PyRIT memory.
+
+        Args:
+            name: Attribute/method name to look up
+
+        Returns:
+            Attribute from PyRIT memory if found
+
+        Raises:
+            AttributeError: If attribute not found on PyRITOrchestrator or PyRIT memory
+
+        Example:
+            >>> orchestrator = PyRITOrchestrator(config=config)
+            >>>
+            >>> # PyRIT v0.10 adds new method tomorrow
+            >>> orchestrator.brand_new_pyrit_method()  # Auto-forwards to memory.brand_new_pyrit_method()
+        """
+        # Avoid infinite recursion for private attributes
+        if name.startswith('_'):
+            raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+
+        # Try forwarding to PyRIT memory
+        if self.memory is not None and hasattr(self.memory, name):
+            attr = getattr(self.memory, name)
+            # If callable, wrap to maintain context
+            if callable(attr):
+                def wrapper(*args, **kwargs):
+                    return attr(*args, **kwargs)
+                return wrapper
+            return attr
+
+        raise AttributeError(
+            f"'{type(self).__name__}' object has no attribute '{name}'. "
+            f"Not found in PyRIT memory either. "
+            f"For bleeding-edge PyRIT features, use orchestrator.get_raw_memory() for direct access."
+        )
+

@@ -7,19 +7,20 @@ Built by a security researcher who got tired of duct-taping academic repos toget
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Tests](https://img.shields.io/badge/tests-100%25%20passing-success.svg)](tests/)
-[![Version](https://img.shields.io/badge/version-1.2.4-blue.svg)](https://github.com/Kennyslaboratory/AI-Purple-Ops/releases)
+[![Version](https://img.shields.io/badge/version-1.2.5-blue.svg)](https://github.com/Kennyslaboratory/AI-Purple-Ops/releases)
 
 ---
 
-## Current Status: v1.2.4 - Production Ready
+## Current Status: v1.2.5 - Production Ready
 
-**Core testing, diagnostics, and session management are production-ready.** v1.2.4 delivers enterprise-grade infrastructure with enhanced accuracy: refined KeywordJudge algorithm, transparent cost tracking with November 2025 pricing, and robust error classification that eliminates false positives.
+**Core testing, diagnostics, and multi-turn verification are production-ready.** v1.2.5 adds PyRIT multi-turn verification with conversation replay, multi-turn ASR scoring modes (final/any/majority), and comprehensive troubleshooting documentation.
 
-**100% test pass rate** (82/82 core tests passing). The foundation is battle-tested and production-ready.
+**100% test pass rate** (100+ core tests passing). The foundation is battle-tested and production-ready.
 
+**What's new in v1.2.5:** Multi-turn verification, conversation replay commands, PyRIT troubleshooting guide, input validation
 **What's live:** Doctor diagnostics, session management, HAR export, rate limiter, error classifier, mode system (quick/full/compliance)
 
-## Feature Status (v1.2.4)
+## Feature Status (v1.2.5)
 
 | Feature | Status | CLI Access | Version |
 |---------|--------|------------|---------|

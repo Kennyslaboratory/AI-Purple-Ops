@@ -18,14 +18,17 @@ def test_track_operation():
     tracker = CostTracker()
     tracker.track(
         operation="run",
-        tokens=1000,
         model="gpt-4",
+        input_tokens=400,
+        output_tokens=600,
         cost=0.03,
     )
     
     assert len(tracker.operations) == 1
     assert tracker.operations[0].operation == "run"
-    assert tracker.operations[0].tokens == 1000
+    assert tracker.operations[0].total_tokens == 1000
+    assert tracker.operations[0].input_tokens == 400
+    assert tracker.operations[0].output_tokens == 600
     assert tracker.operations[0].model == "gpt-4"
     assert tracker.operations[0].cost == 0.03
 
@@ -43,9 +46,9 @@ def test_get_summary_empty():
 def test_get_summary_with_operations():
     """Test summary with multiple operations."""
     tracker = CostTracker()
-    tracker.track("run", 1000, "gpt-4", 0.03)
-    tracker.track("run", 500, "gpt-4", 0.015)
-    tracker.track("verify-suite", 2000, "gpt-4", 0.06)
+    tracker.track(operation="run", model="gpt-4", tokens=1000, cost=0.03)
+    tracker.track(operation="run", model="gpt-4", tokens=500, cost=0.015)
+    tracker.track(operation="verify-suite", model="gpt-4", tokens=2000, cost=0.06)
     
     summary = tracker.get_summary()
     
@@ -59,22 +62,23 @@ def test_get_summary_with_operations():
 
 def test_warn_if_over_budget():
     """Test budget warning."""
-    tracker = CostTracker()
-    tracker.track("run", 1000, "gpt-4", 0.05)
+    # Tracker with budget set to $0.03
+    tracker = CostTracker(budget_usd=0.03)
+    tracker.track(operation="run", model="gpt-4", tokens=1000, cost=0.05)
     
     # Should warn if over budget
-    assert tracker.warn_if_over_budget(0.03) is True
+    assert tracker.warn_if_over_budget() is True
     
     # Should not warn if under budget
-    tracker.reset()
-    tracker.track("run", 1000, "gpt-4", 0.01)
-    assert tracker.warn_if_over_budget(0.03) is False
+    tracker2 = CostTracker(budget_usd=0.03)
+    tracker2.track(operation="run", model="gpt-4", tokens=1000, cost=0.01)
+    assert tracker2.warn_if_over_budget() is False
 
 
 def test_reset():
     """Test resetting tracker."""
     tracker = CostTracker()
-    tracker.track("run", 1000, "gpt-4", 0.03)
+    tracker.track(operation="run", model="gpt-4", tokens=1000, cost=0.03)
     assert len(tracker.operations) == 1
     
     tracker.reset()
@@ -84,9 +88,9 @@ def test_reset():
 def test_get_operation_cost():
     """Test getting cost for specific operation."""
     tracker = CostTracker()
-    tracker.track("run", 1000, "gpt-4", 0.03)
-    tracker.track("verify-suite", 2000, "gpt-4", 0.06)
-    tracker.track("run", 500, "gpt-4", 0.015)
+    tracker.track(operation="run", model="gpt-4", tokens=1000, cost=0.03)
+    tracker.track(operation="verify-suite", model="gpt-4", tokens=2000, cost=0.06)
+    tracker.track(operation="run", model="gpt-4", tokens=500, cost=0.015)
     
     assert tracker.get_operation_cost("run") == 0.045
     assert tracker.get_operation_cost("verify-suite") == 0.06
@@ -95,9 +99,9 @@ def test_get_operation_cost():
 def test_get_model_cost():
     """Test getting cost for specific model."""
     tracker = CostTracker()
-    tracker.track("run", 1000, "gpt-4", 0.03)
-    tracker.track("run", 500, "claude-3-5-sonnet", 0.02)
-    tracker.track("verify-suite", 2000, "gpt-4", 0.06)
+    tracker.track(operation="run", model="gpt-4", tokens=1000, cost=0.03)
+    tracker.track(operation="run", model="claude-3-5-sonnet", tokens=500, cost=0.02)
+    tracker.track(operation="verify-suite", model="gpt-4", tokens=2000, cost=0.06)
     
     assert tracker.get_model_cost("gpt-4") == 0.09
     assert tracker.get_model_cost("claude-3-5-sonnet") == 0.02

@@ -86,6 +86,16 @@ BRANCH_PLAN*
 *_FIXES*.md
 *_TEST*.md
 *_SUMMARY.md
+*_EVALUATION*.md
+*_EVAL*.md
+*_VERDICT*.md
+*_ANALYSIS*.md
+*_STRATEGY*.md
+*_COMPLETE*.md
+BUG_REPORT*.md
+IMPLEMENTATION_*.md
+/test_*.py
+!tests/
 huggingface/
 transformers/
 

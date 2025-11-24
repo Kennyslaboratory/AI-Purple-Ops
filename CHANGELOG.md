@@ -1,5 +1,88 @@
 # Changelog
 
+## 1.2.5 (2025-11-24) - Multi-Turn Verification & Conversation Replay
+
+### Status: Feature Release - PyRIT Multi-Turn Integration
+v1.2.5 adds comprehensive multi-turn verification capabilities with conversation replay, multi-turn ASR scoring modes, and enhanced PyRIT integration.
+
+### Added Features
+
+**Multi-Turn Verification**
+- `--orchestrator` parameter for `verify-suite` command (supports `pyrit` for multi-turn attacks)
+- `--max-turns` parameter with validation (1-100 range, prevents negative values)
+- `--multi-turn-scoring` parameter with three modes:
+  - `majority` (default): Attack succeeds if >50% of turns are jailbreaks
+  - `final`: Attack succeeds only if final turn is a jailbreak (conservative)
+  - `any`: Attack succeeds if any turn is a jailbreak (optimistic)
+
+**Conversation Replay Commands**
+- `aipop replay-conversation <id>` - Replay PyRIT conversations with multiple output formats
+  - `--format text` (default): Human-readable conversation transcript
+  - `--format json`: Machine-readable export for compliance/analysis
+  - `--format interactive`: Rich terminal formatting with colors
+  - `--output` parameter to save to file
+- `aipop list-conversations` - List all stored PyRIT conversations from DuckDB
+  - `--db-path` parameter for custom database locations
+
+**Documentation**
+- Comprehensive PyRIT troubleshooting guide in `docs/ORCHESTRATORS.md`:
+  - DuckDB connection issues (7 common problems with solutions)
+  - PyRIT version mismatches
+  - Memory initialization failures
+  - Bleeding-edge feature access guides
+  - Debug mode usage
+- Multi-turn verification guide in `docs/VERIFICATION.md`:
+  - Why multi-turn matters (conversation-based jailbreaks, guardrail fatigue)
+  - Scoring mode explanations with examples
+  - Performance considerations and optimization strategies
+  - Use-case specific recommendations table
+  - Real-world workflow examples
+
+### Changed
+
+**Error Handling**
+- Invalid `--multi-turn-scoring` modes now raise clear errors with valid options listed
+- Conversation replay errors reference correct command (`list-conversations` instead of `sessions list`)
+- Better error messages for missing conversations and databases
+
+**Validation**
+- Added input validation for `--max-turns` (enforces 1-100 range)
+- Typer enforces min/max constraints automatically
+
+**.gitignore**
+- Added patterns to prevent AI-generated evaluation artifacts:
+  - `*_EVALUATION*.md`, `*_EVAL*.md`, `*_VERDICT*.md`
+  - `*_ANALYSIS*.md`, `*_STRATEGY*.md`, `*_COMPLETE*.md`
+  - `BUG_REPORT*.md`, `IMPLEMENTATION_*.md`
+  - `test_*.py` in root (but allows `tests/` directory)
+
+### Fixed
+
+**SQL Compatibility**
+- Fixed SQLAlchemy 2.0+ compatibility in `list_conversations()` - added `text()` wrapper for raw SQL
+- Corrected DuckDB table name from `PromptRequestPieces` to `PromptMemoryEntries`
+
+**Cost Tracking** 
+- Fixed field access in cost summary display (`tokens` → `total_tokens`)
+
+### Developer
+
+**New Modules**
+- `src/harness/intelligence/conversation_replay.py` (195 lines) - Conversation replay functionality
+- `src/harness/verification/multi_turn_scorer.py` (212 lines) - Multi-turn ASR scoring logic
+
+**Test Coverage**
+- Added 13 tests for multi-turn verification (`tests/verification/test_multi_turn_verification.py`)
+- Added 8 CLI tests for replay commands (`tests/cli/test_replay_commands.py`)
+- All new tests passing (21/21 tests ✅)
+- Total test count: 100+ core tests passing
+
+**Updated Files**
+- `cli/harness.py` - Added replay commands and verify-suite parameters
+- `src/harness/verification/test_verifier.py` - Multi-turn integration
+- `docs/ORCHESTRATORS.md` - PyRIT troubleshooting (200+ lines added)
+- `docs/VERIFICATION.md` - Multi-turn documentation (350+ lines added)
+
 ## 1.2.4 (2025-11-20) - Test Infrastructure & Accuracy Fixes
 
 ### Status: Bug Fixes & Test Improvements

@@ -98,6 +98,138 @@ from cli.batch import batch_attack as batch_attack_func
 app.command(name="batch-attack")(batch_attack_func)
 
 
+@app.command("replay-conversation")
+def replay_conversation_cmd(
+    conversation_id: str = typer.Argument(..., help="Conversation ID to replay"),
+    format: str = typer.Option(
+        "text",
+        "--format",
+        "-f",
+        help="Output format: text (default), json, interactive",
+    ),
+    db_path: str = typer.Option(
+        "out/conversations.duckdb",
+        "--db-path",
+        help="Path to DuckDB file containing conversations",
+    ),
+    output: Path | None = typer.Option(
+        None,
+        "--output",
+        "-o",
+        help="Save output to file (optional, defaults to stdout)",
+    ),
+) -> None:
+    """Replay a conversation from PyRIT orchestrator memory.
+
+    This command retrieves and displays a conversation stored in the DuckDB
+    database by the PyRIT orchestrator. Useful for compliance audits,
+    debugging, and conversation analysis.
+
+    Examples:
+
+        # Display conversation as formatted text
+        aipop replay-conversation abc-123-def-456
+
+        # Export conversation as JSON
+        aipop replay-conversation abc-123-def-456 --format json --output conversation.json
+
+        # Interactive display with rich formatting
+        aipop replay-conversation abc-123-def-456 --format interactive
+
+        # Custom database path
+        aipop replay-conversation abc-123 --db-path /path/to/conversations.duckdb
+    """
+    from harness.intelligence.conversation_replay import (
+        ConversationReplayError,
+        replay_conversation,
+    )
+
+    try:
+        result = replay_conversation(
+            conversation_id=conversation_id,
+            db_path=db_path,
+            format_type=format,
+        )
+
+        # Output to file or stdout
+        if output:
+            output.parent.mkdir(parents=True, exist_ok=True)
+            if format == "json":
+                import json
+                with output.open("w", encoding="utf-8") as f:
+                    json.dump(result, f, indent=2)
+                print_success(f"Conversation saved to {output}")
+            else:
+                with output.open("w", encoding="utf-8") as f:
+                    f.write(result)
+                print_success(f"Conversation saved to {output}")
+        else:
+            # Print to stdout
+            if format == "json":
+                import json
+                print(json.dumps(result, indent=2))
+            else:
+                print(result)
+
+    except ConversationReplayError as e:
+        print_error(f"Error: {e}")
+        raise typer.Exit(1)
+    except Exception as e:
+        print_error(f"Unexpected error: {e}")
+        if "--debug" in sys.argv:
+            import traceback
+            traceback.print_exc()
+        raise typer.Exit(1)
+
+
+@app.command("list-conversations")
+def list_conversations_cmd(
+    db_path: str = typer.Option(
+        "out/conversations.duckdb",
+        "--db-path",
+        help="Path to DuckDB file containing conversations",
+    ),
+) -> None:
+    """List all conversation IDs in the PyRIT orchestrator database.
+
+    Examples:
+
+        # List all conversations
+        aipop list-conversations
+
+        # Custom database path
+        aipop list-conversations --db-path /path/to/conversations.duckdb
+    """
+    from harness.intelligence.conversation_replay import (
+        ConversationReplayError,
+        list_conversations,
+    )
+
+    try:
+        conversation_ids = list_conversations(db_path=db_path)
+
+        if not conversation_ids:
+            print_info("No conversations found in database.")
+            print_info(f"Database path: {db_path}")
+            return
+
+        print_info(f"Found {len(conversation_ids)} conversation(s):\n")
+        for conv_id in conversation_ids:
+            print(f"  {conv_id}")
+
+        print_info(f"\nTo replay: aipop replay-conversation <conversation-id>")
+
+    except ConversationReplayError as e:
+        print_error(f"Error: {e}")
+        raise typer.Exit(1)
+    except Exception as e:
+        print_error(f"Unexpected error: {e}")
+        if "--debug" in sys.argv:
+            import traceback
+            traceback.print_exc()
+        raise typer.Exit(1)
+
+
 def version_callback(value: bool) -> None:
     """Show version and exit."""
     if value:
@@ -1257,6 +1389,9 @@ def verify_suite_cmd(
     threshold: float = typer.Option(8.0, help="Judge threshold for jailbreak classification (1-10 scale)"),
     report_format: str = typer.Option("markdown", help="Report format: json, yaml, markdown, html"),
     output: Path | None = typer.Option(None, help="Save report to file"),
+    orchestrator: str | None = typer.Option(None, "--orchestrator", help="Orchestrator for multi-turn testing (simple, pyrit)"),
+    max_turns: int = typer.Option(1, "--max-turns", help="Maximum conversation turns (for multi-turn orchestrators)", min=1, max=100),
+    multi_turn_scoring: str = typer.Option("majority", "--multi-turn-scoring", help="Multi-turn scoring mode: final, any, majority"),
 ) -> None:
     """Verify test suite with automated ASR measurement.
 
@@ -1425,6 +1560,8 @@ def run_cmd(
         1,
         "--max-turns",
         help="Maximum conversation turns (1 for simple, 5+ for pyrit multi-turn)",
+        min=1,
+        max=100,
     ),
     conversation_id: str | None = typer.Option(
         None,
