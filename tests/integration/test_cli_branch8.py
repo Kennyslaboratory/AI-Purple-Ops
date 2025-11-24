@@ -241,5 +241,5 @@ class TestBackwardCompatibility:
         """Test that 'version' command still exists."""
         result = runner.invoke(app, ["version"])
         assert result.exit_code == 0
-        assert "1.2.3" in result.output
+        assert "1.2.4" in result.output
 

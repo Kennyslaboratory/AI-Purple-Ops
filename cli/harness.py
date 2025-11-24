@@ -1832,7 +1832,7 @@ ASR: {asr_summary['asr']:.1%} ± {(ci_upper - ci_lower) / 2:.1%} (95% CI: [{ci_l
                     table.add_row(
                         op,
                         f"${stats['cost']:.4f}",
-                        f"{stats['tokens']:,}",
+                        f"{stats['total_tokens']:,}",
                         str(stats['count']),
                     )
                 console.print(table)
