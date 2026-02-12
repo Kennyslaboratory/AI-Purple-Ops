@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import subprocess
-import sys
 from pathlib import Path
+
+from tests.helpers.cli_runner import run_cli
 
 
 def test_recipe_list(project_root: Path, tmp_path: Path) -> None:
@@ -28,15 +28,7 @@ execution:
         encoding="utf-8",
     )
 
-    import os
-
-    result = subprocess.run(
-        [sys.executable, "-m", "cli.harness", "recipe", "list"],
-        cwd=tmp_path,
-        capture_output=True,
-        text=True,
-        env={**os.environ, "PYTHONPATH": str(project_root)},
-    )
+    result = run_cli(["recipe", "list"], cwd=tmp_path)
 
     # Should list the recipe - check for recipe name or description
     assert result.returncode == 0
@@ -62,20 +54,7 @@ execution:
         encoding="utf-8",
     )
 
-    result = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "cli.harness",
-            "recipe",
-            "validate",
-            "--path",
-            str(recipe_file),
-        ],
-        cwd=project_root,
-        capture_output=True,
-        text=True,
-    )
+    result = run_cli(["recipe", "validate", "--path", str(recipe_file)], cwd=project_root)
 
     assert result.returncode == 0
     assert "validation passed" in result.stdout.lower()
@@ -99,20 +78,7 @@ execution:
         encoding="utf-8",
     )
 
-    result = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "cli.harness",
-            "recipe",
-            "validate",
-            "--path",
-            str(recipe_file),
-        ],
-        cwd=project_root,
-        capture_output=True,
-        text=True,
-    )
+    result = run_cli(["recipe", "validate", "--path", str(recipe_file)], cwd=project_root)
 
     assert result.returncode == 1
     assert "validation failed" in result.stdout.lower() or "error" in result.stdout.lower()

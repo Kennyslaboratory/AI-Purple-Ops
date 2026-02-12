@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import json
-import subprocess
 from pathlib import Path
 
 import pytest
+from tests.helpers.cli_runner import run_cli
 
 
 @pytest.fixture
@@ -27,12 +27,7 @@ run:
 """
     )
 
-    result = subprocess.run(
-        ["python", "-m", "cli.harness", "gate", "--config", str(config_file)],
-        cwd=project_root,
-        capture_output=True,
-        text=True,
-    )
+    result = run_cli(["gate", "--config", str(config_file)], cwd=project_root)
 
     # Should fail with exit code 1
     assert result.returncode == 1
@@ -63,12 +58,7 @@ run:
 """
     )
 
-    result = subprocess.run(
-        ["python", "-m", "cli.harness", "gate", "--config", str(config_file)],
-        cwd=project_root,
-        capture_output=True,
-        text=True,
-    )
+    result = run_cli(["gate", "--config", str(config_file)], cwd=project_root)
 
     # Should pass with exit code 0
     assert result.returncode == 0, f"Gate should pass but failed: {result.stdout}\n{result.stderr}"
@@ -99,12 +89,7 @@ run:
 """
     )
 
-    result = subprocess.run(
-        ["python", "-m", "cli.harness", "gate", "--config", str(config_file)],
-        cwd=project_root,
-        capture_output=True,
-        text=True,
-    )
+    result = run_cli(["gate", "--config", str(config_file)], cwd=project_root)
 
     # Should fail with exit code 1
     assert result.returncode == 1
@@ -122,12 +107,7 @@ def test_gate_with_explicit_summary_path(project_root, tmp_path):
         json.dumps({"run_id": "test-run-003", "total": 3, "passed": 3, "failed": 0, "results": []})
     )
 
-    result = subprocess.run(
-        ["python", "-m", "cli.harness", "gate", "--summary", str(custom_summary)],
-        cwd=project_root,
-        capture_output=True,
-        text=True,
-    )
+    result = run_cli(["gate", "--summary", str(custom_summary)], cwd=project_root)
 
     # Should pass
     assert result.returncode == 0, f"Gate should pass but failed: {result.stdout}\n{result.stderr}"
@@ -152,12 +132,7 @@ run:
 """
     )
 
-    result = subprocess.run(
-        ["python", "-m", "cli.harness", "gate", "--config", str(config_file)],
-        cwd=project_root,
-        capture_output=True,
-        text=True,
-    )
+    result = run_cli(["gate", "--config", str(config_file)], cwd=project_root)
 
     # Should fail
     assert result.returncode == 1
@@ -186,12 +161,7 @@ run:
 """
     )
 
-    result = subprocess.run(
-        ["python", "-m", "cli.harness", "gate", "--config", str(config_file)],
-        cwd=project_root,
-        capture_output=True,
-        text=True,
-    )
+    result = run_cli(["gate", "--config", str(config_file)], cwd=project_root)
 
     # Should fail
     assert result.returncode == 1

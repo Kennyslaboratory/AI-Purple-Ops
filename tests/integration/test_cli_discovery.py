@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import os
-import subprocess
 from pathlib import Path
 
 import pytest
+from tests.helpers.cli_runner import run_cli
 
 
 @pytest.fixture
@@ -17,12 +17,7 @@ def project_root():
 
 def test_list_suites_command(project_root):
     """Test that 'list suites' command works and shows available suites."""
-    result = subprocess.run(
-        ["python", "-m", "cli.harness", "list", "suites"],
-        cwd=project_root,
-        capture_output=True,
-        text=True,
-    )
+    result = run_cli(["list", "suites"], cwd=project_root)
 
     # Should exit successfully
     assert result.returncode == 0, f"Command failed: {result.stderr}"
@@ -33,12 +28,7 @@ def test_list_suites_command(project_root):
 
 def test_list_invalid_resource(project_root):
     """Test that 'list' with invalid resource fails gracefully."""
-    result = subprocess.run(
-        ["python", "-m", "cli.harness", "list", "invalid_resource"],
-        cwd=project_root,
-        capture_output=True,
-        text=True,
-    )
+    result = run_cli(["list", "invalid_resource"], cwd=project_root)
 
     # Should fail
     assert result.returncode == 1
@@ -49,12 +39,7 @@ def test_list_invalid_resource(project_root):
 
 def test_config_show_command(project_root):
     """Test that 'config show' command works and displays configuration."""
-    result = subprocess.run(
-        ["python", "-m", "cli.harness", "config", "show"],
-        cwd=project_root,
-        capture_output=True,
-        text=True,
-    )
+    result = run_cli(["config", "show"], cwd=project_root)
 
     # Should exit successfully
     assert result.returncode == 0, f"Command failed: {result.stderr}"
@@ -66,12 +51,7 @@ def test_config_show_command(project_root):
 
 def test_config_invalid_action(project_root):
     """Test that 'config' with invalid action fails gracefully."""
-    result = subprocess.run(
-        ["python", "-m", "cli.harness", "config", "invalid_action"],
-        cwd=project_root,
-        capture_output=True,
-        text=True,
-    )
+    result = run_cli(["config", "invalid_action"], cwd=project_root)
 
     # Should fail
     assert result.returncode == 1
@@ -94,12 +74,7 @@ run:
 """
     )
 
-    result = subprocess.run(
-        ["python", "-m", "cli.harness", "config", "show", "--config", str(custom_config)],
-        cwd=project_root,
-        capture_output=True,
-        text=True,
-    )
+    result = run_cli(["config", "show", "--config", str(custom_config)], cwd=project_root)
 
     # Should exit successfully
     assert result.returncode == 0, f"Command failed: {result.stderr}"
@@ -114,13 +89,7 @@ def test_config_show_with_env_vars(project_root):
     env = os.environ.copy()
     env["AIPO_SEED"] = "12345"
 
-    result = subprocess.run(
-        ["python", "-m", "cli.harness", "config", "show"],
-        cwd=project_root,
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    result = run_cli(["config", "show"], cwd=project_root, env=env)
 
     # Should exit successfully
     assert result.returncode == 0, f"Command failed: {result.stderr}"
