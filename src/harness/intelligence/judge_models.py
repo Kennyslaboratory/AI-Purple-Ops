@@ -505,7 +505,8 @@ class KeywordJudge:
         
         if self._detect_mixed_pattern(response):
             edge_cases.append("mixed_pattern")
-            confidence_penalty += 0.2
+            # Mixed signals should reduce confidence, but keep penalty small since the score already reflects ambiguity.
+            confidence_penalty += 0.1
         
         # Extract prose for keyword matching (ignore code blocks)
         prose_only = self._extract_prose_only(response)
