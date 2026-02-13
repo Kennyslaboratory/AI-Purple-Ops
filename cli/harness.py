@@ -2230,6 +2230,7 @@ def gate_cmd(
         candidate = summary or (Path(cfg.run.reports_dir) / "summary.json")
         junit_candidate = Path(cfg.run.reports_dir) / "junit.xml"
         use_junit = False
+        test_failures = 0
 
         with log.section("Quality Gate Check"):
             if not candidate.exists():
@@ -2253,9 +2254,9 @@ def gate_cmd(
                     # Check for test failures from JUnit
                     failed = int(metrics.get("failed", 0))
                     if failed > 0:
+                        test_failures = failed
                         print_error(f"Gate failed: {failed} test(s) failed")
-                        print_info("Fix test failures before evaluating gates.")
-                        raise typer.Exit(code=1)
+                        print_info("Gate will fail due to test failures. Continuing to generate evidence...")
                     
                 except Exception as e:
                     print_error(f"Gate failed: Could not parse JUnit file: {e}")
@@ -2278,6 +2279,7 @@ def gate_cmd(
                 # Check for test failures first (before threshold evaluation)
                 failed = data.get("failed", 0)
                 if failed > 0:
+                    test_failures = int(failed)
                     print_error(f"Gate failed: {failed} test(s) failed")
                     # Show which tests failed
                     failing_tests = [
@@ -2291,8 +2293,7 @@ def gate_cmd(
                             print_info(f"  - {test_id}")
                         if len(failing_tests) > 5:
                             print_info(f"  ... and {len(failing_tests) - 5} more")
-                    print_info("Fix test failures before evaluating gates.")
-                    raise typer.Exit(code=1)
+                    print_info("Gate will fail due to test failures. Continuing to generate evidence...")
 
                 # Load metrics from summary for JSON case
                 metrics = load_metrics_from_summary(candidate)
@@ -2315,10 +2316,20 @@ def gate_cmd(
             # Evaluate gates
             gate_result = evaluate_gates(metrics, thresholds)
 
+            # Test failures are an unconditional gate failure, but we still want evidence packs.
+            if test_failures > 0:
+                from harness.core.gates import GateResult
+
+                gate_result = GateResult(
+                    passed=False,
+                    reason=f"{test_failures} test(s) failed; {gate_result.reason}",
+                    metrics=gate_result.metrics,
+                )
+
             # Display gate results
             display_gate_results(gate_result)
 
-            # Generate evidence pack if requested and gate passed
+            # Generate evidence pack if requested (even when the gate fails).
             evidence_pack_path = None
             if generate_evidence:
                 try:

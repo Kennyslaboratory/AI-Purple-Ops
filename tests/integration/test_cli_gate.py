@@ -99,6 +99,43 @@ run:
     assert "failed" in output.lower()
 
 
+def test_gate_generates_evidence_when_tests_failed(project_root, tmp_path):
+    """Evidence packs are most valuable when the gate fails; generate them even on failures."""
+    reports_dir = tmp_path / "reports"
+    reports_dir.mkdir(parents=True)
+
+    summary = reports_dir / "summary.json"
+    summary.write_text(
+        json.dumps(
+            {
+                "run_id": "test-run-evidence-on-fail",
+                "total": 2,
+                "passed": 1,
+                "failed": 1,
+                "results": [{"test_id": "t1", "passed": True}, {"test_id": "t2", "passed": False}],
+            }
+        )
+    )
+
+    config_file = tmp_path / "harness.yaml"
+    config_file.write_text(
+        f"""
+run:
+  reports_dir: {reports_dir}
+  output_dir: {tmp_path / "out"}
+"""
+    )
+
+    evidence_dir = tmp_path / "evidence"
+    result = run_cli(
+        ["gate", "--config", str(config_file), "--evidence-dir", str(evidence_dir)], cwd=project_root
+    )
+
+    assert result.returncode == 1
+    zip_files = list(evidence_dir.glob("*.zip"))
+    assert zip_files, f"Expected evidence zip in {evidence_dir}, got none. Output:\n{result.stdout}\n{result.stderr}"
+
+
 def test_gate_with_explicit_summary_path(project_root, tmp_path):
     """Test gate with explicit --summary path."""
     # Create a summary in a custom location
