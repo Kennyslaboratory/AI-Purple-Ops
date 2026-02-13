@@ -7,7 +7,7 @@ from pathlib import Path
 from tests.helpers.cli_runner import run_cli
 
 
-def test_recipe_list(project_root: Path, tmp_path: Path) -> None:
+def test_recipe_list(tmp_path: Path) -> None:
     """Test recipe list command."""
     # Create a recipe directory structure
     recipes_dir = tmp_path / "recipes" / "safety"

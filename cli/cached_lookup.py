@@ -9,20 +9,23 @@ import json
 import sys
 from pathlib import Path
 
+TOOL_VERSION = "1.2.1"
+
 
 def generate_cache_key(
     method: str, prompt: str, model: str, implementation: str, params: dict
 ) -> str:
     """Generate cache key matching AttackCache logic with versioning."""
-    # Hardcoded version to match main tool (update when version changes)
-    VERSION = "1.2.1"
+    # Hardcoded version to match main tool (update when version changes).
+    # Keep module-level constant naming to avoid local-constant lint violations.
+    version = TOOL_VERSION
 
     sorted_params = json.dumps(params, sort_keys=True)
     hash_input = f"{prompt}:{model}:{implementation}:{sorted_params}"
     content_hash = hashlib.sha256(hash_input.encode()).hexdigest()[:16]
 
     # Format: aipop:v{VERSION}:{method}:{implementation}:{hash}
-    cache_key = f"aipop:v{VERSION}:{method}:{implementation}:{content_hash}"
+    cache_key = f"aipop:v{version}:{method}:{implementation}:{content_hash}"
 
     return cache_key
 
@@ -73,7 +76,7 @@ def lookup_cached_result(
         conn.close()
 
         if result:
-            result_json, expires_at, cost = result
+            result_json, _expires_at, _cost = result
             return json.loads(result_json)
 
         return None
@@ -82,7 +85,7 @@ def lookup_cached_result(
         return None
 
 
-def main():
+def main() -> None:
     """Main entry point for fast cache lookup."""
     if len(sys.argv) < 4:
         print(

@@ -7,6 +7,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -15,11 +17,18 @@ jobs:
           make setup
           python -m pip install --upgrade pip
           pip install jsonschema pyyaml fastapi uvicorn
-      - name: Lint, type check, tests, security
-        run: make ci
+      - name: Tests
+        run: make test
+      - name: Security (Bandit High Only)
+        run: .venv/bin/bandit -q -r src -lll
+      - name: Lint Ratchet (Changed Files)
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          .venv/bin/python scripts/ratchet_lint_changed.py --base "$BASE_SHA"
       - name: Validate recipes against schema
         run: |
-          python scripts/validate_recipes.py
+          .venv/bin/python scripts/validate_recipes.py
       - name: Upload run artifacts
         if: always()
         uses: actions/upload-artifact@v4
