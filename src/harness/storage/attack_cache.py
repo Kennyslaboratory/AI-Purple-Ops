@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import os
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -49,12 +50,18 @@ class PAIRCacheEntry:
 class AttackCache:
     """DuckDB cache for expensive attack operations."""
 
-    def __init__(self, db_path: str | Path = "out/attack_cache.duckdb"):
+    # Single source of truth for cache location when callers don't pass db_path.
+    # Tests can set this to isolate cache DBs under tmp paths.
+    DB_PATH_ENV = "AIPOP_ATTACK_CACHE_DB"
+
+    def __init__(self, db_path: str | Path | None = None):
         """Initialize attack cache.
 
         Args:
             db_path: Path to DuckDB database
         """
+        if db_path is None:
+            db_path = os.getenv(self.DB_PATH_ENV) or "out/attack_cache.duckdb"
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._init_tables()
@@ -732,4 +739,3 @@ class AttackCache:
                 logger.info(f"Cleared {count} cache entries for version {version}")
             
             return count
-
