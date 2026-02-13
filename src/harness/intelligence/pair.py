@@ -273,7 +273,10 @@ Return ONLY valid JSON."""
         # Check if prompts are repeating
         recent_prompts = [turn.prompt for turn in stream.history[-3:]]
         if len(recent_prompts) >= 2:
-            prompt_hashes = [hashlib.md5(p.encode()).hexdigest() for p in recent_prompts]
+            prompt_hashes = [
+                hashlib.md5(p.encode(), usedforsecurity=False).hexdigest()
+                for p in recent_prompts
+            ]
             if len(set(prompt_hashes)) == 1:
                 return True  # Same prompt repeated
 
@@ -410,4 +413,3 @@ Return ONLY valid JSON."""
         )
 
         return self.streams
-
