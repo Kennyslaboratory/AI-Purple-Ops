@@ -26,6 +26,11 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: |
           .venv/bin/python scripts/ratchet_lint_changed.py --base "$BASE_SHA"
+      - name: Type Ratchet (No New Mypy Errors)
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          .venv/bin/python scripts/ratchet_type_baseline.py --base "$BASE_SHA"
       - name: Validate recipes against schema
         run: |
           .venv/bin/python scripts/validate_recipes.py
