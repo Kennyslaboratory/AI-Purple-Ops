@@ -217,7 +217,7 @@ def list_conversations_cmd(
         for conv_id in conversation_ids:
             print(f"  {conv_id}")
 
-        print_info(f"\nTo replay: aipop replay-conversation <conversation-id>")
+        print_info("\nTo replay: aipop replay-conversation <conversation-id>")
 
     except ConversationReplayError as e:
         print_error(f"Error: {e}")
@@ -1080,7 +1080,7 @@ def generate_suffix_cmd(
             plugin = load_plugin_with_cache(method, implementation=implementation, use_cache=True)
         except Exception as e:
             print_error(f"Failed to load plugin: {e}")
-            print_info(f"\nTrying legacy implementation...")
+            print_info("\nTrying legacy implementation...")
             plugin = load_plugin_with_cache(method, implementation="legacy", use_cache=True)
 
         # For black-box mode, create adapter if provided
@@ -1952,7 +1952,7 @@ ASR: {asr_summary['asr']:.1%} ± {(ci_upper - ci_lower) / 2:.1%} (95% CI: [{ci_l
             
             console = Console()
             console.print("\n[bold cyan]Cost Summary (Estimated ±5%)[/bold cyan]")
-            console.print(f"Method: API metadata (gpt-4o-mini: $0.15/M input, $0.60/M output)")
+            console.print("Method: API metadata (gpt-4o-mini: $0.15/M input, $0.60/M output)")
             console.print(f"Total Cost: [bold]${cost_summary['total_cost']:.4f}[/bold]")
             console.print(f"Total Tokens: {cost_summary['total_tokens']:,}")
             console.print("\n[dim]Note: Actual costs may vary due to caching, system prompts, or API updates.[/dim]")

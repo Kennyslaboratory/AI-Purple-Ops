@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ruff: noqa: S603, S607
 """
 Changed-files lint ratchet for messy repos.
 
@@ -22,7 +23,13 @@ from pathlib import Path
 
 
 def _run(cmd: list[str], *, check: bool) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(cmd, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=check)
+    return subprocess.run(
+        cmd,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        check=check,
+    )
 
 
 def _default_base_ref() -> str:
@@ -52,6 +59,7 @@ def _ruff_json_count_for_path(ruff_bin: str, path: str) -> int:
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
+        check=False,
     )
     # Ruff exits non-zero when it finds diagnostics. We still want the JSON list.
     out = (cp.stdout or "").strip()
@@ -71,6 +79,7 @@ def _ruff_json_count_for_git_blob(ruff_bin: str, base: str, path: str) -> int:
             ["git", "cat-file", "-e", f"{base}:{path}"],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
+            check=False,
         ).returncode
         == 0
     )
@@ -79,12 +88,12 @@ def _ruff_json_count_for_git_blob(ruff_bin: str, base: str, path: str) -> int:
 
     show = subprocess.run(
         ["git", "show", f"{base}:{path}"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         text=True,
+        check=False,
     )
     if show.returncode != 0:
-        raise RuntimeError(show.stderr.strip() or f"git show failed for {base}:{path}")
+        raise RuntimeError((show.stderr or "").strip() or f"git show failed for {base}:{path}")
 
     cp = subprocess.run(
         [ruff_bin, "check", "-q", "--output-format", "json", "--stdin-filename", path, "-"],
@@ -92,6 +101,7 @@ def _ruff_json_count_for_git_blob(ruff_bin: str, base: str, path: str) -> int:
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
+        check=False,
     )
     out = (cp.stdout or "").strip()
     if not out:

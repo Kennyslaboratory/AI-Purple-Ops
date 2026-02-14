@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ruff: noqa: S603
 """
 Generate deterministic docs tables and update README placeholder blocks.
 
@@ -7,8 +8,12 @@ Outputs:
   - docs/generated/technique-coverage.md
 
 Also updates README.md content between:
-  <!-- BEGIN GENERATED: supported-integrations --> ... <!-- END GENERATED: supported-integrations -->
-  <!-- BEGIN GENERATED: technique-coverage --> ... <!-- END GENERATED: technique-coverage -->
+  <!-- BEGIN GENERATED: supported-integrations -->
+  ...
+  <!-- END GENERATED: supported-integrations -->
+  <!-- BEGIN GENERATED: technique-coverage -->
+  ...
+  <!-- END GENERATED: technique-coverage -->
 """
 
 from __future__ import annotations
@@ -18,6 +23,11 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+
+try:
+    import yaml  # type: ignore[import-not-found]
+except Exception:  # pragma: no cover
+    yaml = None  # type: ignore[assignment]
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -49,6 +59,7 @@ def _run(cmd: list[str], *, env: dict[str, str] | None = None) -> str:
         text=True,
         capture_output=True,
         env=env,
+        check=False,
     )
     if proc.returncode != 0:
         raise RuntimeError(
@@ -140,12 +151,8 @@ def load_adapters_from_cli() -> list[AdapterRow]:
 
 
 def _yaml_load(path: Path) -> dict[str, Any]:
-    try:
-        import yaml  # type: ignore[import-not-found]
-    except Exception as e:  # pragma: no cover
-        raise RuntimeError(
-            f"PyYAML is required to parse suite YAML for docs generation: {e}"
-        ) from e
+    if yaml is None:  # pragma: no cover
+        raise RuntimeError("PyYAML is required to parse suite YAML for docs generation")
 
     with path.open(encoding="utf-8") as f:
         data = yaml.safe_load(f)
@@ -222,7 +229,9 @@ def render_supported_integrations(adapters: list[AdapterRow]) -> str:
             + " |"
         )
     lines.append("")
-    lines.append("> Note: “Supported” is limited to built-in adapters listed by `aipop adapter list`.")
+    lines.append(
+        "> Note: “Supported” is limited to built-in adapters listed by `aipop adapter list`."
+    )
     return "\n".join(lines) + "\n"
 
 
@@ -295,8 +304,16 @@ def main() -> int:
     write_if_changed(DOCS_GENERATED_DIR / "technique-coverage.md", technique_md)
 
     readme = README_PATH.read_text(encoding="utf-8")
-    readme2 = _replace_generated_block(readme, key="supported-integrations", replacement=supported_md)
-    readme3 = _replace_generated_block(readme2, key="technique-coverage", replacement=technique_md)
+    readme2 = _replace_generated_block(
+        readme,
+        key="supported-integrations",
+        replacement=supported_md,
+    )
+    readme3 = _replace_generated_block(
+        readme2,
+        key="technique-coverage",
+        replacement=technique_md,
+    )
     write_if_changed(README_PATH, readme3)
 
     return 0

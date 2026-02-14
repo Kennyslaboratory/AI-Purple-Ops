@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ruff: noqa: S603
 """
 Type-checking ratchet for messy repos.
 
@@ -20,7 +21,6 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
-
 
 MYPY_COUNT_RE = re.compile(r"^Found\s+(\d+)\s+errors?\b", re.MULTILINE)
 
