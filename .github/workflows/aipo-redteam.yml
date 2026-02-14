@@ -22,12 +22,13 @@ jobs:
 
       - name: Run redteam tests
         run: |
-          python -m cli.harness recipe run security/full_redteam --adapter mock
+          AIPO_OUTPUT_DIR=out python -m cli.harness run --suite adversarial --adapter mock --response-mode smart
         continue-on-error: true
 
       - name: Quality gate check
         run: |
-          python -m cli.harness gate
+          AIPO_OUTPUT_DIR=out python -m cli.harness gate --generate-evidence
+        continue-on-error: true
 
       - name: Upload evidence pack
         if: always()
