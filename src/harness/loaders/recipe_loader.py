@@ -12,11 +12,7 @@ import yaml
 from jsonschema import ValidationError, validate
 
 from harness.utils.errors import HarnessError
-
-# Recipe schema path
-RECIPE_SCHEMA_PATH = (
-    Path(__file__).parent.parent.parent.parent / "reports" / "schemas" / "recipe.schema.json"
-)
+from harness.utils.schema_resolver import load_json_schema
 
 
 class RecipeLoadError(HarnessError):
@@ -101,7 +97,7 @@ def resolve_config_variables(config: dict[str, Any]) -> dict[str, Any]:
     return resolved
 
 
-def load_recipe(recipe_path: Path | str) -> RecipeConfig:
+def load_recipe(recipe_path: Path | str) -> RecipeConfig:  # noqa: PLR0912
     """Load and validate a recipe YAML file.
 
     Args:
@@ -128,25 +124,14 @@ def load_recipe(recipe_path: Path | str) -> RecipeConfig:
                 f"Invalid recipe format: Expected dictionary, got {type(recipe_data).__name__}"
             )
 
-        # Load and validate schema - REQUIRED for production
-        if not RECIPE_SCHEMA_PATH.exists():
-            raise RecipeLoadError(
-                f"Recipe schema not found: {RECIPE_SCHEMA_PATH}\n"
-                f"This is required for recipe validation. Ensure the schema file exists."
-            )
-
-        import json
-
+        # Load and validate schema (override -> packaged resource -> repo fallback)
         try:
-            with RECIPE_SCHEMA_PATH.open("r", encoding="utf-8") as f:
-                schema = json.load(f)
-        except json.JSONDecodeError as e:
-            raise RecipeLoadError(
-                f"Recipe schema file is invalid JSON: {RECIPE_SCHEMA_PATH}\nError: {e}"
-            ) from e
+            loaded = load_json_schema("recipe.schema.json")
+            schema = loaded.schema
+            schema_source = loaded.source
         except Exception as e:
             raise RecipeLoadError(
-                f"Failed to load recipe schema: {RECIPE_SCHEMA_PATH}\nError: {e}"
+                "Recipe schema not found or could not be loaded.\n" f"Error: {e}"
             ) from e
 
         try:
@@ -155,7 +140,7 @@ def load_recipe(recipe_path: Path | str) -> RecipeConfig:
             raise RecipeLoadError(
                 f"Recipe schema validation failed: {e.message}\n"
                 f"Path: {recipe_path}\n"
-                f"Hint: Check recipe structure against {RECIPE_SCHEMA_PATH.name}"
+                f"Schema: {schema_source}"
             ) from e
 
         # Resolve environment variables in config section

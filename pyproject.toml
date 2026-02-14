@@ -122,5 +122,8 @@ markers = [
 [tool.setuptools]
 packages = { find = { where = ["src", "."] } }
 
+[tool.setuptools.package-data]
+"harness.schemas" = ["*.json"]
+
 [project.scripts]
 aipop = "cli.harness:main"

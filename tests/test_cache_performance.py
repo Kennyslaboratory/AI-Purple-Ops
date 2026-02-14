@@ -203,11 +203,13 @@ def test_cache_result_preservation():
 
 
 @pytest.mark.integration
-def test_fast_cache_lookup_vs_full_plugin(tmp_path):
+def test_fast_cache_lookup_vs_full_plugin(tmp_path, monkeypatch):
     """Test fast cache lookup returns same results as full plugin load."""
     from harness.intelligence.plugins.loader import check_cache_fast
     
-    cache = AttackCache(db_path=tmp_path / "test_fast_lookup.db")
+    # Ensure both AttackCache() and check_cache_fast() read the same DB path.
+    monkeypatch.setenv(AttackCache.DB_PATH_ENV, str(tmp_path / "test_fast_lookup.db"))
+    cache = AttackCache()
     
     result = {
         "success": True,
@@ -225,4 +227,3 @@ def test_fast_cache_lookup_vs_full_plugin(tmp_path):
     
     assert cached is not None
     assert cached["adversarial_prompts"] == result["adversarial_prompts"]
-

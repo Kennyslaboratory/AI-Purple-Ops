@@ -1,198 +1,93 @@
-# AI Purple Ops Documentation
+# AI Purple Ops Docs (Index)
 
-Welcome to AI Purple Ops documentation. Find what you need fast.
+This folder is the source of truth for how to run AI Purple Ops and what contracts it promises.
 
----
+If something is not backed by code or a reproducible command, treat it as **Unknown** or **Planned**.
 
-## Quick Start
+## Start Here (By Persona)
 
-New to AI Purple Ops? Start here:
+Operator (running tests):
+- Setup: `docs/SETUP.md`
+- CLI: `docs/CLI.md`
+- Adapters: `docs/ADAPTERS.md`
+- Suites: `docs/REDTEAM.md`
+- Recipes: `docs/RECIPES.md`
+- Gates and evidence: `docs/GATES.md`, `docs/EVIDENCE_PACK_SPEC.md`
 
-1. **[Main README](../README.md)** - Project overview and quick start
-2. **[CLI Reference](CLI.md)** - Command-line usage
-3. **[Adapters Guide](ADAPTERS.md)** - Connect to your AI model
-4. **[Recipes Guide](RECIPES.md)** - Pre-configured workflows
+Contributor (changing code safely):
+- Branch strategy: `docs/BRANCHES.md`
+- Configuration precedence: `docs/CONFIGURATION.md`
+- Plugin architecture: `docs/PLUGIN_ARCHITECTURE.md`
+- Orchestrators: `docs/ORCHESTRATORS.md`
+- ADRs: `docs/adr/README.md`
 
----
+Researcher (understanding techniques and measurement):
+- Modern attacks overview: `docs/MODERN_ATTACKS.md`
+- GCG: `docs/GCG.md`
+- PAIR: `docs/PAIR.md`
+- AutoDAN: `docs/AUTODAN.md`
+- Statistical rigor: `docs/STATISTICAL_RIGOR.md`
+- Verification: `docs/VERIFICATION.md`
 
-## User Guides
+AI agent (working in this repo):
+- Context: `docs/agents/CONTEXT.md`
+- Rules: `docs/agents/RULES.md`
+- Task patterns: `docs/agents/TASKS.md`
 
-### Core Functionality
-- **[CLI Reference](CLI.md)** - Complete command-line interface reference
-- **[Adapters Guide](ADAPTERS.md)** - Connect to any AI model (OpenAI, Anthropic, local models)
-- **[Recipes Guide](RECIPES.md)** - Pre-configured security testing workflows
-- **[Configuration Guide](CONFIGURATION.md)** - Advanced configuration options
-- **[Environment Variables](ENVIRONMENT_VARIABLES.md)** - Configuration via environment
+## Doc Map (Existing Files)
 
-### Security Testing
-- **[Red Team Guide](REDTEAM.md)** - Adversarial testing strategies
-- **[Policies Guide](POLICIES.md)** - Content policies and enforcement
-- **[Gates Guide](GATES.md)** - Quality gate configuration and thresholds
-- **[Indirect Injection](INDIRECT_INJECTION.md)** - Indirect prompt injection attacks
+Setup and environment:
+- `docs/SETUP.md`
+- `docs/ENVIRONMENT_VARIABLES.md`
+- `docs/MODEL_MANAGEMENT.md`
 
-### Compliance & Evidence
-- **[Compliance Overview](COMPLIANCE_OVERVIEW.md)** - NIST, EU AI Act, FedRAMP
-- **[Evidence Pack Specification](EVIDENCE_PACK_SPEC.md)** - Evidence artifact format
-- **[Tool Manifest](TOOLS_MANIFEST.md)** - Integrated security tools
+CLI and workflows:
+- `docs/CLI.md`
+- `docs/RECIPES.md`
+- `docs/CONFIGURATION.md`
 
-### Operations
-- **[Model Management](MODEL_MANAGEMENT.md)** - Disk space and model caching
-- **[Usage Policy](USAGE_POLICY.md)** - Authorized use guidelines
+Adapters and integrations:
+- `docs/ADAPTERS.md`
+- `docs/MCP_ADAPTER.md`
+- `docs/ORCHESTRATORS.md`
+- `docs/QUICK_ADAPTER.md`
 
----
+Gates, policies, evidence:
+- `docs/GATES.md`
+- `docs/POLICIES.md`
+- `docs/EVIDENCE_PACK_SPEC.md`
+- `docs/COMPLIANCE_OVERVIEW.md`
+- `docs/ASR_VALIDATION.md`
 
-## Developer Documentation
+Techniques and intelligence:
+- `docs/MODERN_ATTACKS.md`
+- `docs/INDIRECT_INJECTION.md`
+- `docs/MUTATION_ENGINE.md`
+- `docs/GUARDRAIL_FINGERPRINTING.md`
+- `docs/INTELLIGENCE_ROADMAP.md`
+- `docs/METHOD_COMPARISON.md`
+- `docs/KNOWN_ISSUES.md`
 
-### Architecture
-- **[Architecture: Pipeline](architecture/pipeline.md)** - End-to-end evaluation lifecycle
-- **[Architecture: UI Hooks](architecture/UI_HOOKS.md)** - Future UI integration points
-- **[Architecture: Values](architecture/VALUES.md)** - Design principles
+Project direction and governance:
+- `docs/ROADMAP.md`
+- `docs/FUTURE_ENHANCEMENTS.md`
+- `docs/BRANCHES.md`
+- `docs/USAGE_POLICY.md`
+- `docs/USER_CONTROL.md`
+- `docs/adr/README.md`
 
-### Development Process
-- **[Roadmap](ROADMAP.md)** - Development phases and status
-- **[Branches Strategy](BRANCHES.md)** - Branch workflow and acceptance criteria
-- **[Contributing Guide](../CONTRIBUTING.md)** - How to contribute
+Architecture and style:
+- `docs/architecture/pipeline.md`
+- `docs/architecture/VALUES.md`
+- `docs/architecture/UI_HOOKS.md`
+- `docs/style/console.md`
 
-### Architecture Decisions
-- **[ADR Index](adr/README.md)** - Architecture Decision Records
-- **[ADR 0001: Context and Scope](adr/0001-context-and-scope.md)**
-- **[ADR 0002: Licensing](adr/0002-licensing.md)**
+Runbooks:
+- `docs/runbooks/ir_prompt_injection.md`
+- `docs/runbooks/release_checklist.md`
+- `docs/runbooks/rollback.md`
 
-### Threat Models
-- **[Threat Model Template](threatmodels/tm_template.md)** - Template for new features
-- **[Threat Models Index](threatmodels/README.md)** - Existing threat models
+Threat models:
+- `docs/threatmodels/README.md`
+- `docs/threatmodels/tm_template.md`
 
----
-
-## Operational Runbooks
-
-Emergency procedures and operational guides:
-
-- **[Incident Response: Prompt Injection](runbooks/ir_prompt_injection.md)** - Responding to prompt injection incidents
-- **[Release Checklist](runbooks/release_checklist.md)** - Pre-release verification steps
-- **[Rollback Procedures](runbooks/rollback.md)** - How to roll back a release
-
----
-
-## Style Guides
-
-- **[Console Output Style](style/console.md)** - Console output formatting standards
-
----
-
-## Documentation by Use Case
-
-### "I want to test my AI model for security issues"
-
-1. **[Adapters Guide](ADAPTERS.md)** - Connect to your model
-2. **[CLI Reference](CLI.md)** - Run security tests (`aipop run --suite redteam`)
-3. **[Gates Guide](GATES.md)** - Set up quality gates
-4. **[Red Team Guide](REDTEAM.md)** - Advanced adversarial testing
-
-### "I need to generate compliance evidence"
-
-1. **[Recipes Guide](RECIPES.md)** - Use compliance recipes
-2. **[Compliance Overview](COMPLIANCE_OVERVIEW.md)** - Understand frameworks
-3. **[Evidence Pack Specification](EVIDENCE_PACK_SPEC.md)** - Evidence format
-4. **[Gates Guide](GATES.md)** - Generate evidence packs
-
-### "I want to integrate with my CI/CD pipeline"
-
-1. **[CLI Reference](CLI.md)** - Exit codes and automation
-2. **[Gates Guide](GATES.md)** - Automated quality gates
-3. **[Configuration Guide](CONFIGURATION.md)** - CI/CD configuration
-4. **[Runbooks](runbooks/)** - Operational procedures
-
-### "I want to build a custom adapter"
-
-1. **[Adapters Guide](ADAPTERS.md)** - Adapter development guide
-2. **[Architecture: Pipeline](architecture/pipeline.md)** - Understanding the architecture
-3. **[Contributing Guide](../CONTRIBUTING.md)** - Development workflow
-
-### "I want to understand the project structure"
-
-1. **[Roadmap](ROADMAP.md)** - Development phases
-2. **[Architecture: Values](architecture/VALUES.md)** - Design principles
-3. **[Branches Strategy](BRANCHES.md)** - Development process
-4. **[ADR Index](adr/README.md)** - Key decisions
-
----
-
-## API Reference
-
-### Core Protocols
-
-```python
-# Adapter Protocol
-class Adapter(Protocol):
-    def invoke(self, prompt: str, **kwargs) -> ModelResponse:
-        ...
-
-# Detector Protocol
-class Detector(Protocol):
-    def check(self, response: ModelResponse, test_case: TestCase) -> DetectorResult:
-        ...
-
-# Gate Protocol
-class Gate(Protocol):
-    def evaluate(self, metrics: dict[str, float]) -> GateResult:
-        ...
-```
-
-See source code in `src/harness/core/` for complete protocol definitions.
-
----
-
-## External Resources
-
-### Standards & Frameworks
-- [NIST AI Risk Management Framework](https://www.nist.gov/itl/ai-risk-management-framework)
-- [EU AI Act (Regulation 2024/1689)](https://artificialintelligenceact.eu/)
-- [OWASP LLM Top 10](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
-- [MITRE ATLAS](https://atlas.mitre.org/)
-
-### Integrated Tools
-- [PyRIT](https://github.com/Azure/PyRIT) - Microsoft's Python Risk Identification Toolkit
-- [Garak](https://github.com/leondz/garak) - LLM vulnerability scanner
-- [Promptfoo](https://github.com/promptfoo/promptfoo) - LLM testing framework
-- [PromptInject](https://github.com/agencyenterprise/PromptInject) - Prompt injection detection
-
----
-
-## Getting Help
-
-- **GitHub Issues**: [Report bugs or request features](https://github.com/Kennyslaboratory/AI-Purple-Ops/issues)
-- **Security Issues**: See [SECURITY.md](../SECURITY.md) for responsible disclosure
-- **Discussions**: [GitHub Discussions](https://github.com/Kennyslaboratory/AI-Purple-Ops/discussions)
-
----
-
-## Documentation Status
-
-| Document | Status | Last Updated |
-|----------|--------|--------------|
-| Main README | ✅ Current | 2025-11-08 |
-| CLI Reference | ✅ Current | 2025-11-08 |
-| Adapters Guide | ✅ Current | 2025-11-08 |
-| Roadmap | ✅ Current | 2025-11-08 |
-| Recipes Guide | ⚠️ Review needed | 2025-11-06 |
-| Configuration Guide | ✅ Current | 2025-11-06 |
-| Gates Guide | ✅ Current | 2025-11-06 |
-| Compliance Overview | ⚠️ Stub (needs expansion) | 2025-11-05 |
-
----
-
-## Contributing to Docs
-
-Found a typo or outdated information? We welcome documentation contributions!
-
-1. Fork the repository
-2. Edit the relevant markdown file
-3. Submit a pull request
-
-See [CONTRIBUTING.md](../CONTRIBUTING.md) for details.
-
----
-
-**Documentation Version**: v0.6.2
-**Last Updated**: 2025-11-08

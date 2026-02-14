@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import json
-import subprocess
 from pathlib import Path
 
 import pytest
+from tests.helpers.cli_runner import run_cli
 
 
 @pytest.fixture
@@ -27,12 +27,7 @@ run:
 """
     )
 
-    result = subprocess.run(
-        ["python", "-m", "cli.harness", "gate", "--config", str(config_file)],
-        cwd=project_root,
-        capture_output=True,
-        text=True,
-    )
+    result = run_cli(["gate", "--config", str(config_file)], cwd=project_root)
 
     # Should fail with exit code 1
     assert result.returncode == 1
@@ -63,12 +58,7 @@ run:
 """
     )
 
-    result = subprocess.run(
-        ["python", "-m", "cli.harness", "gate", "--config", str(config_file)],
-        cwd=project_root,
-        capture_output=True,
-        text=True,
-    )
+    result = run_cli(["gate", "--config", str(config_file)], cwd=project_root)
 
     # Should pass with exit code 0
     assert result.returncode == 0, f"Gate should pass but failed: {result.stdout}\n{result.stderr}"
@@ -99,12 +89,7 @@ run:
 """
     )
 
-    result = subprocess.run(
-        ["python", "-m", "cli.harness", "gate", "--config", str(config_file)],
-        cwd=project_root,
-        capture_output=True,
-        text=True,
-    )
+    result = run_cli(["gate", "--config", str(config_file)], cwd=project_root)
 
     # Should fail with exit code 1
     assert result.returncode == 1
@@ -112,6 +97,43 @@ run:
     # Should show failure message
     output = result.stdout + result.stderr
     assert "failed" in output.lower()
+
+
+def test_gate_generates_evidence_when_tests_failed(project_root, tmp_path):
+    """Evidence packs are most valuable when the gate fails; generate them even on failures."""
+    reports_dir = tmp_path / "reports"
+    reports_dir.mkdir(parents=True)
+
+    summary = reports_dir / "summary.json"
+    summary.write_text(
+        json.dumps(
+            {
+                "run_id": "test-run-evidence-on-fail",
+                "total": 2,
+                "passed": 1,
+                "failed": 1,
+                "results": [{"test_id": "t1", "passed": True}, {"test_id": "t2", "passed": False}],
+            }
+        )
+    )
+
+    config_file = tmp_path / "harness.yaml"
+    config_file.write_text(
+        f"""
+run:
+  reports_dir: {reports_dir}
+  output_dir: {tmp_path / "out"}
+"""
+    )
+
+    evidence_dir = tmp_path / "evidence"
+    result = run_cli(
+        ["gate", "--config", str(config_file), "--evidence-dir", str(evidence_dir)], cwd=project_root
+    )
+
+    assert result.returncode == 1
+    zip_files = list(evidence_dir.glob("*.zip"))
+    assert zip_files, f"Expected evidence zip in {evidence_dir}, got none. Output:\n{result.stdout}\n{result.stderr}"
 
 
 def test_gate_with_explicit_summary_path(project_root, tmp_path):
@@ -122,12 +144,7 @@ def test_gate_with_explicit_summary_path(project_root, tmp_path):
         json.dumps({"run_id": "test-run-003", "total": 3, "passed": 3, "failed": 0, "results": []})
     )
 
-    result = subprocess.run(
-        ["python", "-m", "cli.harness", "gate", "--summary", str(custom_summary)],
-        cwd=project_root,
-        capture_output=True,
-        text=True,
-    )
+    result = run_cli(["gate", "--summary", str(custom_summary)], cwd=project_root)
 
     # Should pass
     assert result.returncode == 0, f"Gate should pass but failed: {result.stdout}\n{result.stderr}"
@@ -152,12 +169,7 @@ run:
 """
     )
 
-    result = subprocess.run(
-        ["python", "-m", "cli.harness", "gate", "--config", str(config_file)],
-        cwd=project_root,
-        capture_output=True,
-        text=True,
-    )
+    result = run_cli(["gate", "--config", str(config_file)], cwd=project_root)
 
     # Should fail
     assert result.returncode == 1
@@ -186,12 +198,7 @@ run:
 """
     )
 
-    result = subprocess.run(
-        ["python", "-m", "cli.harness", "gate", "--config", str(config_file)],
-        cwd=project_root,
-        capture_output=True,
-        text=True,
-    )
+    result = run_cli(["gate", "--config", str(config_file)], cwd=project_root)
 
     # Should fail
     assert result.returncode == 1

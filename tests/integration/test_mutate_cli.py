@@ -1,20 +1,16 @@
 """CLI integration tests for mutate command."""
 
 import json
-import subprocess
 import tempfile
 from pathlib import Path
 
 import pytest
+from tests.helpers.cli_runner import run_cli
 
 
 def test_cli_mutate_basic():
     """Test basic mutate command."""
-    result = subprocess.run(
-        ["python", "-m", "cli.harness", "mutate", "test prompt"],
-        capture_output=True,
-        text=True,
-    )
+    result = run_cli(["mutate", "test prompt"])
 
     # Should execute successfully
     assert result.returncode in (0, 1)  # May fail if dependencies missing
@@ -23,19 +19,7 @@ def test_cli_mutate_basic():
 
 def test_cli_mutate_with_strategies():
     """Test mutate command with specific strategies."""
-    result = subprocess.run(
-        [
-            "python",
-            "-m",
-            "cli.harness",
-            "mutate",
-            "test",
-            "--strategies",
-            "encoding,unicode",
-        ],
-        capture_output=True,
-        text=True,
-    )
+    result = run_cli(["mutate", "test", "--strategies", "encoding,unicode"])
 
     assert result.returncode in (0, 1)
 
@@ -46,20 +30,15 @@ def test_cli_mutate_with_output():
         output_path = f.name
 
     try:
-        result = subprocess.run(
+        result = run_cli(
             [
-                "python",
-                "-m",
-                "cli.harness",
                 "mutate",
                 "test prompt",
                 "--output",
                 output_path,
                 "--count",
                 "5",
-            ],
-            capture_output=True,
-            text=True,
+            ]
         )
 
         if result.returncode == 0:
@@ -82,19 +61,7 @@ def test_cli_mutate_with_config():
         f.write("enable_encoding: true\nenable_unicode: false\n")
 
     try:
-        result = subprocess.run(
-            [
-                "python",
-                "-m",
-                "cli.harness",
-                "mutate",
-                "test",
-                "--config",
-                config_path,
-            ],
-            capture_output=True,
-            text=True,
-        )
+        result = run_cli(["mutate", "test", "--config", config_path])
 
         assert result.returncode in (0, 1)
     finally:
@@ -104,56 +71,21 @@ def test_cli_mutate_with_config():
 
 def test_cli_mutate_with_count():
     """Test mutate command with count limit."""
-    result = subprocess.run(
-        [
-            "python",
-            "-m",
-            "cli.harness",
-            "mutate",
-            "test",
-            "--count",
-            "3",
-        ],
-        capture_output=True,
-        text=True,
-    )
+    result = run_cli(["mutate", "test", "--count", "3"])
 
     assert result.returncode in (0, 1)
 
 
 def test_cli_mutate_with_stats():
     """Test mutate command with stats flag."""
-    result = subprocess.run(
-        [
-            "python",
-            "-m",
-            "cli.harness",
-            "mutate",
-            "test",
-            "--stats",
-        ],
-        capture_output=True,
-        text=True,
-    )
+    result = run_cli(["mutate", "test", "--stats"])
 
     assert result.returncode in (0, 1)
 
 
 def test_cli_mutate_invalid_strategy():
     """Test mutate command with invalid strategy."""
-    result = subprocess.run(
-        [
-            "python",
-            "-m",
-            "cli.harness",
-            "mutate",
-            "test",
-            "--strategies",
-            "invalid_strategy",
-        ],
-        capture_output=True,
-        text=True,
-    )
+    result = run_cli(["mutate", "test", "--strategies", "invalid_strategy"])
 
     # Should still execute (invalid strategies just ignored)
     assert result.returncode in (0, 1)
@@ -161,11 +93,7 @@ def test_cli_mutate_invalid_strategy():
 
 def test_cli_mutate_help():
     """Test mutate command help."""
-    result = subprocess.run(
-        ["python", "-m", "cli.harness", "mutate", "--help"],
-        capture_output=True,
-        text=True,
-    )
+    result = run_cli(["mutate", "--help"])
 
     assert result.returncode == 0
     assert "mutate" in result.stdout.lower()
@@ -174,20 +102,15 @@ def test_cli_mutate_help():
 
 def test_cli_mutate_provider_flag():
     """Test mutate command with provider flag."""
-    result = subprocess.run(
+    result = run_cli(
         [
-            "python",
-            "-m",
-            "cli.harness",
             "mutate",
             "test",
             "--strategies",
             "paraphrase",
             "--provider",
             "openai",
-        ],
-        capture_output=True,
-        text=True,
+        ]
     )
 
     # May fail if API key missing, but should handle gracefully
@@ -196,11 +119,6 @@ def test_cli_mutate_provider_flag():
 
 def test_cli_mutate_empty_prompt():
     """Test mutate command with empty prompt."""
-    result = subprocess.run(
-        ["python", "-m", "cli.harness", "mutate", ""],
-        capture_output=True,
-        text=True,
-    )
+    result = run_cli(["mutate", ""])
 
     assert result.returncode in (0, 1)
-
