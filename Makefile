@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-.PHONY: help setup lint fmt type sec audit test smoke clean ci
+.PHONY: help setup lint fmt type sec audit test smoke clean ci docs-tables docs-check
 
 VENV := .venv
 ifeq ($(OS),Windows_NT)
@@ -67,6 +67,9 @@ evidence.test: ## Create and verify sample evidence pack
 	python scripts/evidence_roundtrip.py
 
 ci: lint type sec test ## Run core checks (audit not included, see help)
+
+docs-tables: ## Generate docs tables (docs/generated/*) and update README placeholders
+	$(PY) scripts/generate_docs_tables.py
 
 toolkit: ## Install and verify redteam tools
 	@echo "=== Installing Redteam Toolkit ==="
