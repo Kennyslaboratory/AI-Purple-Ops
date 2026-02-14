@@ -71,6 +71,9 @@ ci: lint type sec test ## Run core checks (audit not included, see help)
 docs-tables: ## Generate docs tables (docs/generated/*) and update README placeholders
 	$(PY) scripts/generate_docs_tables.py
 
+docs-check: docs-tables ## Fail if generated docs tables drift from committed outputs
+	git diff --exit-code -- docs/generated README.md
+
 toolkit: ## Install and verify redteam tools
 	@echo "=== Installing Redteam Toolkit ==="
 	aipop tools install --stable || $(PY) -m cli.harness tools install --stable
