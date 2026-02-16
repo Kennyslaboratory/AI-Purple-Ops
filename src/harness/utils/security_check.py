@@ -11,6 +11,8 @@ from pathlib import Path
 from rich.console import Console
 from rich.panel import Panel
 
+from harness.utils.adapter_paths import adapter_spec_globs, get_adapter_dir
+
 console = Console()
 
 
@@ -103,11 +105,14 @@ def ensure_gitignore_protection(repo_root: Path) -> None:
     """
     gitignore_path = repo_root / ".gitignore"
     
+    adapter_dir = get_adapter_dir()
+    adapter_dir_str = adapter_dir.as_posix()
+    yaml_globs = adapter_spec_globs()
     patterns_to_add = [
         "# User-generated adapter configs (may contain secrets)",
-        "adapters/*.yaml",
-        "adapters/*.yml",
-        "!adapters/templates/",
+        f"{adapter_dir_str}/{yaml_globs[0]}",
+        f"{adapter_dir_str}/{yaml_globs[1]}",
+        f"!{adapter_dir_str}/templates/",
     ]
     
     if not gitignore_path.exists():
@@ -118,7 +123,7 @@ def ensure_gitignore_protection(repo_root: Path) -> None:
     content = gitignore_path.read_text(encoding="utf-8")
     
     # Check if patterns already exist
-    if "adapters/*.yaml" in content:
+    if patterns_to_add[1] in content:
         return  # Already protected
     
     # Append patterns
@@ -161,4 +166,3 @@ def show_env_var_reminder(env_var_name: str) -> None:
         )
     )
     console.print()
-

@@ -54,6 +54,7 @@ from harness.utils.progress import (
     print_warning,
     test_progress,
 )
+from harness.utils.adapter_paths import adapter_spec_path
 from harness.utils.security import SecurityError, validate_config_path
 
 app = typer.Typer(add_completion=False, help="AI Purple Ops CLI")
@@ -3249,7 +3250,7 @@ def _adapter_test(name: str, prompt: str | None = None) -> None:
     from harness.adapters.registry import load_adapter_from_yaml
     
     test_prompt = prompt or "Hello, world!"
-    config_path = Path(f"adapters/{name}.yaml")
+    config_path = adapter_spec_path(name)
     
     # Check if it's a YAML adapter
     if config_path.exists():
@@ -3475,7 +3476,7 @@ def _adapter_quick(
     config = generate_adapter_config(parsed_data, name)
     
     # Save config
-    output_path = Path(f"adapters/{name}.yaml")
+    output_path = adapter_spec_path(name)
     save_adapter_config(config, output_path)
     
     print_success(f"✓ Config generated: {output_path}")
