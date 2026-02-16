@@ -19,8 +19,7 @@ In particular:
 - Phase 3: Generated tables + drift guard (`make docs-check`) - Done
 - Phase 4: ASR trust gap (optional, pinned benchmark artifacts) - Planned
 - Phase 5: Resolve `adapters/` directory confusion safely
-  - Phase 5.1: Document intent (`adapters/README.md`, repo shape clarity) - In progress
+  - Phase 5.1: Document intent (`adapters/README.md`, repo shape clarity) - Done
   - Phase 5.2: Optional move/rename with compatibility stub - Planned
 - Phase 6: Subprocess + exception boundaries (high trust payoff) - Planned
 - Phase 7: Structural refactor (migration style, strangler pattern) - Planned
-
