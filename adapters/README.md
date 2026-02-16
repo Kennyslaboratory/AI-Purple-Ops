@@ -1,16 +1,18 @@
-# Adapters Directory
+# `adapters/` (Templates, Not Python Code)
 
-This directory contains adapter implementations for different AI model providers and platforms.
+This top-level directory is for **adapter templates and metadata** used to help operators and contributors configure integrations.
 
-## Current Adapters
+It is **not** where the Python adapter implementations live.
 
-- **Mock Adapter** (`src/harness/adapters/mock.py`) - Deterministic testing adapter
-- **OpenAI Adapter** (`src/harness/adapters/openai.py`) - OpenAI API integration
-- **Anthropic Adapter** (`src/harness/adapters/anthropic.py`) - Anthropic Claude API integration
-- **AWS Bedrock Adapter** (`src/harness/adapters/bedrock.py`) - AWS Bedrock integration
+## Source Of Truth For Adapter Code
 
-## Platform Adapters
+Python adapter implementations live under:
+- `src/harness/adapters/`
 
-Platform-specific adapters for multi-tenant environments are planned for future releases.
+Docs:
+- `docs/ADAPTERS.md`
 
-See [docs/ADAPTERS.md](../docs/ADAPTERS.md) for adapter development guide.
+## What Lives Here
+
+- `adapters/templates/`: starter YAML templates (for example `adapters/templates/mcp.yaml`) you can copy/adapt for your environment.
+- `adapters/platform/`: platform-specific scaffolding (not a Python runtime package).
