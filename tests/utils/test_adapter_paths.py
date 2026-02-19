@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from harness.utils import adapter_paths
 from harness.utils.adapter_paths import (
     adapter_module_roots,
     adapter_spec_globs,
@@ -51,3 +52,26 @@ def test_adapter_module_roots_env_prepend(monkeypatch) -> None:
         "user_adapters",
         "custom_adapters",
     ]
+
+
+def test_adapter_templates_dir_falls_back_to_packaged_assets(monkeypatch, tmp_path: Path) -> None:
+    """Outside repo root, templates should resolve to packaged harness assets."""
+    monkeypatch.chdir(tmp_path)
+
+    templates_dir = get_adapter_templates_dir()
+    expected = Path(adapter_paths.__file__).resolve().parents[1] / "templates/adapters"
+
+    assert templates_dir == expected
+    assert (templates_dir / "mcp.yaml").read_text(encoding="utf-8")
+
+
+def test_packaged_templates_match_repo_templates() -> None:
+    """Packaged templates must stay byte-identical with repo templates."""
+    repo_root = Path(__file__).resolve().parents[2]
+    repo_templates = repo_root / "templates/adapters"
+    packaged_templates = repo_root / "src/harness/templates/adapters"
+
+    for filename in ("mcp.yaml", "custom_http.yaml"):
+        assert (repo_templates / filename).read_bytes() == (
+            packaged_templates / filename
+        ).read_bytes()

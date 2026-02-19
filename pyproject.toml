@@ -124,6 +124,7 @@ packages = { find = { where = ["src", "."] } }
 
 [tool.setuptools.package-data]
 "harness.schemas" = ["*.json"]
+"harness" = ["templates/adapters/*.yaml"]
 
 [project.scripts]
 aipop = "cli.harness:main"
