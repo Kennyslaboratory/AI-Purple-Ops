@@ -141,7 +141,7 @@ metadata:
 # ============================================================================
 #
 # 1. Copy this template:
-#    cp adapters/templates/mcp.yaml adapters/my_server.yaml
+#    cp templates/adapters/mcp.yaml adapters/my_server.yaml
 #
 # 2. Edit configuration (URL, auth, etc.)
 #
@@ -158,4 +158,3 @@ metadata:
 #    aipop run --adapter mcp:adapters/my_server.yaml --attack gcg
 #
 # ============================================================================
-

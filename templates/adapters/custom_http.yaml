@@ -2,7 +2,7 @@
 # Copy this file to adapters/my_api.yaml and customize
 #
 # Quick start:
-#   1. Copy: cp adapters/templates/custom_http.yaml adapters/my_api.yaml
+#   1. Copy: cp templates/adapters/custom_http.yaml adapters/my_api.yaml
 #   2. Edit: vim adapters/my_api.yaml
 #   3. Test: aipop adapter test my_api
 #   4. Use: aipop run --suite quick_test --adapter my_api
@@ -59,4 +59,3 @@ response:
 # Test: aipop adapter test my_api
 # Scan: aipop run --suite quick_test --adapter my_api
 # Batch: aipop batch-attack prompts.txt --adapter my_api
-

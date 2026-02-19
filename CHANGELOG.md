@@ -729,7 +729,7 @@ Production-grade MCP adapter with full v1.1 spec compliance, bringing AI Purple 
   - `capabilities.py` - Server capability detection
   - `methods/` - Full MCP method implementations (tools, resources, prompts, completion, logging)
   - `errors.py` - Comprehensive error hierarchy with troubleshooting guidance
-- `adapters/templates/mcp.yaml` - Production config template with extensive documentation
+- `templates/adapters/mcp.yaml` - Production config template with extensive documentation
 
 #### Dependencies
 - Added `websocket-client>=1.8.0` for WebSocket transport
@@ -737,7 +737,7 @@ Production-grade MCP adapter with full v1.1 spec compliance, bringing AI Purple 
 #### Usage
 ```bash
 # Create config from template
-cp adapters/templates/mcp.yaml adapters/my_server.yaml
+cp templates/adapters/mcp.yaml adapters/my_server.yaml
 
 # Set auth token
 export MCP_AUTH_TOKEN="your-token-here"
