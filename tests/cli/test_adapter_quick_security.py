@@ -14,10 +14,10 @@ def test_adapter_quick_path_invokes_gitignore_protection(
     calls: dict[str, Path] = {}
     monkeypatch.chdir(tmp_path)
 
-    import harness.adapters.error_handlers as error_handlers
-    import harness.adapters.quick_adapter as quick_adapter
-    import harness.utils.security_check as security_check
     from rich.prompt import Confirm
+
+    from harness.adapters import error_handlers, quick_adapter
+    from harness.utils import security_check
 
     monkeypatch.setattr(
         quick_adapter,

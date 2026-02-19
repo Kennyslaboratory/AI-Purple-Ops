@@ -5,6 +5,7 @@ Detects secrets in YAML files and warns users to use environment variables.
 
 from __future__ import annotations
 
+import os
 import re
 from pathlib import Path
 
@@ -48,7 +49,8 @@ def check_config_for_secrets(config_path: Path) -> list[str]:
         # Exclude likely environment variable references
         if not re.search(r'\$\{[A-Z_]+\}', content):
             # Only warn if it looks like a real key (not a placeholder)
-            if not any(placeholder in content.lower() for placeholder in ["fixme", "your-", "example", "xxx"]):
+            placeholders = ["fixme", "your-", "example", "xxx"]
+            if not any(placeholder in content.lower() for placeholder in placeholders):
                 warnings.append("Long API key-like string detected in config")
     
     # Detect AWS keys
@@ -72,8 +74,8 @@ def show_security_warning(config_path: Path, warnings: list[str]) -> None:
     if not warnings:
         return
 
-    protection_applied, adapter_dir_display, patterns, protection_error = ensure_gitignore_protection(
-        repo_root=Path.cwd(), adapter_dir=config_path.parent
+    protection_applied, adapter_dir_display, patterns, protection_error = (
+        ensure_gitignore_protection(repo_root=Path.cwd(), adapter_dir=config_path.parent)
     )
 
     warnings_list = "\n".join(f"  • {w}" for w in warnings)
@@ -190,8 +192,6 @@ def check_env_var_set(env_var_name: str) -> bool:
     Returns:
         True if set, False otherwise
     """
-    import os
-    
     return env_var_name in os.environ
 
 

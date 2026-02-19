@@ -6,7 +6,7 @@ from pathlib import Path
 
 from rich.console import Console
 
-import harness.utils.security_check as security_check
+from harness.utils import security_check
 from harness.utils.security_check import ensure_gitignore_protection
 
 
