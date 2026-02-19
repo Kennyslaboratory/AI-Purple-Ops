@@ -381,7 +381,7 @@ The MCP adapter enables AI Purple Ops to interact with and exploit MCP servers.
 aipop mcp enumerate target.yaml
 
 # 2. Manual tool call
-aipop mcp call target.yaml read_file -p '{"path": "/flag.txt"}'
+aipop mcp call target.yaml read_file -p '{{"path": "/flag.txt"}}'
 
 # 3. Auto-exploitation (let AI solve it)
 aipop mcp exploit target.yaml "Find and extract the CTF flag"
