@@ -6,6 +6,7 @@ import importlib
 from typing import Any
 
 from harness.core.adapters import Adapter
+from harness.utils.adapter_paths import adapter_module_roots
 from harness.utils.errors import HarnessError
 
 
@@ -89,11 +90,7 @@ class AdapterRegistry:
                 raise AdapterRegistryError(f"Failed to load adapter {name}: {e}") from e
 
         # Try as simple name in common locations
-        common_paths = [
-            "adapters",
-            "user_adapters",
-            "custom_adapters",
-        ]
+        common_paths = adapter_module_roots()
 
         for path in common_paths:
             try:
