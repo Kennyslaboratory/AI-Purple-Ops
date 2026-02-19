@@ -5,6 +5,7 @@ Detects secrets in YAML files and warns users to use environment variables.
 
 from __future__ import annotations
 
+import os
 import re
 from pathlib import Path
 
@@ -48,7 +49,8 @@ def check_config_for_secrets(config_path: Path) -> list[str]:
         # Exclude likely environment variable references
         if not re.search(r'\$\{[A-Z_]+\}', content):
             # Only warn if it looks like a real key (not a placeholder)
-            if not any(placeholder in content.lower() for placeholder in ["fixme", "your-", "example", "xxx"]):
+            placeholders = ["fixme", "your-", "example", "xxx"]
+            if not any(placeholder in content.lower() for placeholder in placeholders):
                 warnings.append("Long API key-like string detected in config")
     
     # Detect AWS keys
@@ -71,11 +73,30 @@ def show_security_warning(config_path: Path, warnings: list[str]) -> None:
     """
     if not warnings:
         return
-    
+
+    protection_applied, adapter_dir_display, patterns, protection_error = (
+        ensure_gitignore_protection(repo_root=Path.cwd(), adapter_dir=config_path.parent)
+    )
+
     warnings_list = "\n".join(f"  • {w}" for w in warnings)
     adapter_name = config_path.stem.upper().replace("-", "_")
     env_var_name = f"{adapter_name}_API_KEY"
-    
+
+    if protection_applied:
+        protection_msg = (
+            f"[green]✓ Added protection in .gitignore for [dim]{adapter_dir_display}[/dim][/green]"
+        )
+    else:
+        reason = f" ({protection_error})" if protection_error else ""
+        manual_lines = "\n".join(
+            ["# User-generated adapter configs (may contain secrets)", *patterns]
+        )
+        protection_msg = (
+            f"[yellow]Could not update .gitignore automatically{reason}.[/yellow]\n"
+            f"[bold]Add this to .gitignore manually:[/bold]\n"
+            f"[dim]{manual_lines}[/dim]"
+        )
+
     console.print()
     console.print(
         Panel.fit(
@@ -88,8 +109,9 @@ def show_security_warning(config_path: Path, warnings: list[str]) -> None:
             f"  3. Replace token with: [dim]${{{env_var_name}}}[/dim]\n"
             f"  4. Set environment variable:\n"
             f"     [dim]export {env_var_name}=your-secret-here[/dim]\n"
-            f"  5. Never commit adapter configs to git\n\n"
-            f"[green]✓ Added to .gitignore automatically[/green]",
+            f"  5. Never commit adapter configs to git\n"
+            f"  6. Adapter config dir: [dim]{adapter_dir_display}[/dim]\n\n"
+            f"{protection_msg}",
             border_style="yellow",
             title="[bold]Security Alert[/bold]",
         )
@@ -97,40 +119,68 @@ def show_security_warning(config_path: Path, warnings: list[str]) -> None:
     console.print()
 
 
-def ensure_gitignore_protection(repo_root: Path) -> None:
+def ensure_gitignore_protection(
+    repo_root: Path, adapter_dir: Path | None = None
+) -> tuple[bool, str, list[str], str | None]:
     """Ensure adapter configs are in .gitignore.
     
     Args:
         repo_root: Root directory of the repository
+        adapter_dir: Optional adapter directory override
+
+    Returns:
+        Tuple of (applied, adapter_dir_display, patterns, error_reason)
     """
     gitignore_path = repo_root / ".gitignore"
-    
-    adapter_dir = get_adapter_dir()
-    adapter_dir_str = adapter_dir.as_posix()
+    repo_root_resolved = repo_root.resolve()
+    resolved_adapter_dir = adapter_dir or get_adapter_dir()
+
+    if resolved_adapter_dir.is_absolute():
+        adapter_dir_resolved = resolved_adapter_dir.resolve()
+    else:
+        adapter_dir_resolved = (repo_root_resolved / resolved_adapter_dir).resolve()
+
+    try:
+        adapter_dir_display = adapter_dir_resolved.relative_to(repo_root_resolved).as_posix()
+    except ValueError:
+        adapter_dir_display = resolved_adapter_dir.as_posix()
+        patterns = _gitignore_patterns(adapter_dir_display)
+        return False, adapter_dir_display, patterns, "adapter directory is outside repository root"
+
+    patterns = _gitignore_patterns(adapter_dir_display)
+    header = "# User-generated adapter configs (may contain secrets)"
+    existing_content = gitignore_path.read_text(encoding="utf-8") if gitignore_path.exists() else ""
+    missing_patterns = [pattern for pattern in patterns if pattern not in existing_content]
+
+    if not missing_patterns:
+        return True, adapter_dir_display, patterns, None
+
+    try:
+        with gitignore_path.open("a", encoding="utf-8") as f:
+            if existing_content and not existing_content.endswith("\n"):
+                f.write("\n")
+            if existing_content:
+                f.write("\n")
+            if header not in existing_content:
+                f.write(f"{header}\n")
+            f.write("\n".join(missing_patterns))
+            f.write("\n")
+    except OSError as exc:
+        return False, adapter_dir_display, patterns, f"failed to write .gitignore: {exc}"
+
+    return True, adapter_dir_display, patterns, None
+
+
+def _gitignore_patterns(adapter_dir_display: str) -> list[str]:
+    """Build gitignore patterns for adapter config protection."""
     yaml_globs = adapter_spec_globs()
-    patterns_to_add = [
-        "# User-generated adapter configs (may contain secrets)",
-        f"{adapter_dir_str}/{yaml_globs[0]}",
-        f"{adapter_dir_str}/{yaml_globs[1]}",
-        f"!{adapter_dir_str}/templates/",
+    return [
+        f"{adapter_dir_display}/{yaml_globs[0]}",
+        f"{adapter_dir_display}/{yaml_globs[1]}",
+        f"!{adapter_dir_display}/templates/",
+        f"!{adapter_dir_display}/templates/{yaml_globs[0]}",
+        f"!{adapter_dir_display}/templates/{yaml_globs[1]}",
     ]
-    
-    if not gitignore_path.exists():
-        # Create .gitignore if it doesn't exist
-        gitignore_path.write_text("\n".join(patterns_to_add) + "\n", encoding="utf-8")
-        return
-    
-    content = gitignore_path.read_text(encoding="utf-8")
-    
-    # Check if patterns already exist
-    if patterns_to_add[1] in content:
-        return  # Already protected
-    
-    # Append patterns
-    with gitignore_path.open("a", encoding="utf-8") as f:
-        f.write("\n\n")
-        f.write("\n".join(patterns_to_add))
-        f.write("\n")
 
 
 def check_env_var_set(env_var_name: str) -> bool:
@@ -142,8 +192,6 @@ def check_env_var_set(env_var_name: str) -> bool:
     Returns:
         True if set, False otherwise
     """
-    import os
-    
     return env_var_name in os.environ
 
 
