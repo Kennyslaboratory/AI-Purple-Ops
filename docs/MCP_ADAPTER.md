@@ -26,7 +26,7 @@ The MCP (Model Context Protocol) adapter in AI Purple Ops enables direct securit
 
 ```bash
 # Copy the template
-cp adapters/templates/mcp.yaml adapters/target_mcp.yaml
+cp templates/adapters/mcp.yaml adapters/target_mcp.yaml
 
 # Edit configuration
 vim adapters/target_mcp.yaml
@@ -868,7 +868,7 @@ done
 
 - **MCP Protocol Specification:** https://spec.modelcontextprotocol.io/
 - **Payload Database:** `src/harness/ctf/strategies/payloads/mcp_exploits.json`
-- **Example Configs:** `adapters/templates/mcp.yaml`
+- **Example Configs:** `templates/adapters/mcp.yaml`
 - **CTF Strategies:** `aipop ctf list`
 
 ---
@@ -884,4 +884,3 @@ For issues or questions:
 **Happy Hacking! 🔓**
 
 *Remember: With great power comes great responsibility. Use these techniques ethically.*
-

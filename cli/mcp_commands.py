@@ -20,6 +20,8 @@ from rich.panel import Panel
 from rich.syntax import Syntax
 from rich.table import Table
 
+from harness.utils.adapter_paths import get_adapter_templates_dir
+
 app = typer.Typer(name="mcp", help="MCP adapter commands for CTF and pentesting")
 console = Console()
 
@@ -346,7 +348,8 @@ def test_connection(
 @app.command()
 def info() -> None:
     """Display MCP adapter information and usage examples."""
-    help_text = """
+    example_template = (get_adapter_templates_dir() / "mcp.yaml").as_posix()
+    help_text = f"""
 [cyan bold]MCP (Model Context Protocol) Adapter[/cyan bold]
 
 The MCP adapter enables AI Purple Ops to interact with and exploit MCP servers.
@@ -378,14 +381,14 @@ The MCP adapter enables AI Purple Ops to interact with and exploit MCP servers.
 aipop mcp enumerate target.yaml
 
 # 2. Manual tool call
-aipop mcp call target.yaml read_file -p '{"path": "/flag.txt"}'
+aipop mcp call target.yaml read_file -p '{{"path": "/flag.txt"}}'
 
 # 3. Auto-exploitation (let AI solve it)
 aipop mcp exploit target.yaml "Find and extract the CTF flag"
 ```
 
 [yellow]For full documentation:[/yellow]
-See adapters/templates/mcp.yaml for configuration examples
+See {example_template} for configuration examples
 """
     
     console.print(Panel(help_text, title="MCP Adapter Info", border_style="cyan"))
@@ -393,4 +396,3 @@ See adapters/templates/mcp.yaml for configuration examples
 
 if __name__ == "__main__":
     app()
-

@@ -24,6 +24,11 @@ def adapter_spec_globs() -> list[str]:
     return ["*.yaml", "*.yml"]
 
 
+def get_adapter_templates_dir() -> Path:
+    """Resolve the directory that stores adapter YAML templates."""
+    return Path("templates/adapters")
+
+
 def adapter_module_roots() -> list[str]:
     """Resolve Python module roots for custom adapter imports."""
     default_roots = ["adapters", "user_adapters", "custom_adapters"]

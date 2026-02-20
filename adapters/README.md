@@ -1,8 +1,9 @@
-# `adapters/` (Templates, Not Python Code)
+# `adapters/` (Runtime Specs, Not Python Code)
 
-This top-level directory is for **adapter templates and metadata** used to help operators and contributors configure integrations.
+This top-level directory is the runtime contract location for adapter YAML specs
+(for example `adapters/target.yaml`).
 
-It is **not** where the Python adapter implementations live.
+It is **not** where Python adapter implementations live.
 
 ## Source Of Truth For Adapter Code
 
@@ -12,7 +13,7 @@ Python adapter implementations live under:
 Docs:
 - `docs/ADAPTERS.md`
 
-## What Lives Here
+## Related Directories
 
-- `adapters/templates/`: starter YAML templates (for example `adapters/templates/mcp.yaml`) you can copy/adapt for your environment.
+- `templates/adapters/`: starter YAML templates you can copy/adapt.
 - `adapters/platform/`: platform-specific scaffolding (not a Python runtime package).

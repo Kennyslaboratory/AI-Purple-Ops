@@ -9,6 +9,7 @@ from harness.utils.adapter_paths import (
     adapter_spec_globs,
     adapter_spec_path,
     get_adapter_dir,
+    get_adapter_templates_dir,
 )
 
 
@@ -18,6 +19,7 @@ def test_adapter_path_defaults(monkeypatch) -> None:
     monkeypatch.delenv("AIPO_ADAPTER_MODULE_PATHS", raising=False)
 
     assert get_adapter_dir() == Path("adapters")
+    assert get_adapter_templates_dir() == Path("templates/adapters")
     assert adapter_spec_path("target") == Path("adapters/target.yaml")
     assert adapter_spec_globs() == ["*.yaml", "*.yml"]
 
@@ -27,6 +29,7 @@ def test_adapter_dir_env_override(monkeypatch) -> None:
     monkeypatch.setenv("AIPO_ADAPTER_DIR", "custom/adapters")
 
     assert get_adapter_dir() == Path("custom/adapters")
+    assert get_adapter_templates_dir() == Path("templates/adapters")
     assert adapter_spec_path("target") == Path("custom/adapters/target.yaml")
 
 

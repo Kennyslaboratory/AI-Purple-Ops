@@ -18,7 +18,6 @@ They are not yet fully enforced by tooling.
 | `cli/` | CLI surface | CLI entrypoints that call into `src/harness/` | `src/harness/` | `tests/` |
 | `scripts/` | Maintainers | Developer/CI utilities (docs generation, ratchets, validators) | `src/harness/`, `cli/` (when needed) | N/A |
 | `recipes/`, `suites/`, `registry/` | Operators + maintainers | Data: recipe definitions, suite definitions, registries used by the runtime | N/A | N/A |
-| `adapters/` | Operators + maintainers | Non-code templates/scaffolding for integrations (not Python adapter code) | N/A | N/A |
+| `adapters/` | Operators + maintainers | Runtime adapter YAML specs and non-code integration scaffolding (not Python adapter code) | N/A | N/A |
 | `docs/` | Maintainers | Human documentation and contracts | N/A | N/A |
 | `tests/` | Maintainers | Test harness and contract tests | `src/harness/`, `cli/`, `scripts/` | N/A |
-
