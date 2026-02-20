@@ -25,8 +25,11 @@ def adapter_spec_globs() -> list[str]:
 
 
 def get_adapter_templates_dir() -> Path:
-    """Resolve the directory that stores adapter YAML templates."""
-    return Path("templates/adapters")
+    """Resolve adapter templates for repo mode and installed mode."""
+    repo_templates = Path("templates/adapters")
+    if repo_templates.exists():
+        return repo_templates
+    return Path(__file__).resolve().parents[1] / "templates/adapters"
 
 
 def adapter_module_roots() -> list[str]:
